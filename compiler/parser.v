@@ -1,8 +1,6 @@
 module compiler
 
 import os
-import json
-import filepath
 
 pub struct Parser {
 mut:
@@ -31,8 +29,8 @@ const (
 	whitespace = [` `, `\t`, `\n`, `\r`]
 )
 
-fn (p & Parser) current_file() &File {
-	return &p.files[p.files.len-1]
+fn (p &Parser) current_file() &File {
+	return p.files[p.files.len-1]
 }
 
 fn (p &Parser) report_error(text string) {
@@ -51,7 +49,7 @@ fn (p &Parser) cur_char() int {
 	return (p.char - p.line_char)
 }
 
-fn (p mut Parser) next_line() {
+fn (mut p Parser) next_line() {
 	p.line++
 	p.line_char = p.char
 }
@@ -68,7 +66,7 @@ fn (p &Parser) next_chars(count int) string {
 	return p.text[p.char .. p.char + count]
 }
 
-fn (p mut Parser) consume_char() byte {
+fn (mut p Parser) consume_char() byte {
 	ret := p.next_char()
 	p.char++
 
@@ -79,7 +77,7 @@ fn (p mut Parser) consume_char() byte {
 	return ret
 }
 
-fn (p mut Parser) consume_chars(count int) string {
+fn (mut p Parser) consume_chars(count int) string {
 	mut ret := ""
 
 	for i := 0; i < count; i++ {
@@ -89,7 +87,7 @@ fn (p mut Parser) consume_chars(count int) string {
 	return ret
 }
 
-fn (p mut Parser) consume_oneline_comment() {
+fn (mut p Parser) consume_oneline_comment() {
 	for {
 		if p.end_of_file() { break }
 
@@ -98,7 +96,7 @@ fn (p mut Parser) consume_oneline_comment() {
 	}
 }
 
-fn (p mut Parser) consume_comment() {
+fn (mut p Parser) consume_comment() {
 	for {
 		if p.end_of_file() { p.report_error('End of file whilst consuming comment') }
 
@@ -110,7 +108,7 @@ fn (p mut Parser) consume_comment() {
 	}
 }
 
-fn (p mut Parser) consume_whitespace() {
+fn (mut p Parser) consume_whitespace() {
 	for {
 		if p.end_of_file() { break }
 
@@ -131,7 +129,7 @@ fn (p mut Parser) consume_whitespace() {
 	}
 }
 
-fn (p mut Parser) consume_string() ?string {
+fn (mut p Parser) consume_string() ?string {
 	// strLit = ( "'" { charValue } "'" ) | ( '"' { charValue } '"' )
 
 	// TODO we need to parse escaped characters properly in here aswell!
@@ -199,7 +197,7 @@ fn (p &Parser) next_full_ident() string {
 	return p.next_chars(i-1)
 }
  
-fn (p mut Parser) consume_ident() ?string {
+fn (mut p Parser) consume_ident() ?string {
 	mut text := ''
 
 	mut first := true
@@ -224,14 +222,14 @@ fn (p mut Parser) consume_ident() ?string {
 	else { return none }
 }
 
-fn (p mut Parser) consume_known_ident() {
+fn (mut p Parser) consume_known_ident() {
 	p.consume_ident() or {
 		p.report_error('Expected identifier')
 		panic('') // appease compiler
 	}
 }
 
-fn (p mut Parser) consume_full_ident() ?string {
+fn (mut p Parser) consume_full_ident() ?string {
 	mut text := ''
 
 	if p.next_char() == `.` {
@@ -254,7 +252,7 @@ fn (p mut Parser) consume_full_ident() ?string {
 	else { return none }
 }
 
-fn (p mut Parser) consume_decimals() ?string {
+fn (mut p Parser) consume_decimals() ?string {
 	mut lit := ''
 
 	for {
@@ -271,7 +269,7 @@ fn (p mut Parser) consume_decimals() ?string {
 	else { return none }
 }
 
-fn (p mut Parser) consume_decimal() ?string {
+fn (mut p Parser) consume_decimal() ?string {
 	// decimalLit = ( "1" … "9" ) { decimalDigit }
 
 	if p.next_char() < `1` || p.next_char() > `9` {
@@ -294,7 +292,7 @@ fn (p mut Parser) consume_decimal() ?string {
 	return lit
 }
 
-fn (p mut Parser) consume_octal() ?string {
+fn (mut p Parser) consume_octal() ?string {
 	if p.next_char() != `0` {
 		return none
 	}
@@ -315,7 +313,7 @@ fn (p mut Parser) consume_octal() ?string {
 	return lit
 }
 
-fn (p mut Parser) consume_hex() ?string {
+fn (mut p Parser) consume_hex() ?string {
 	if p.next_chars(2) != '0x' {
 		return none
 	}
@@ -326,7 +324,7 @@ fn (p mut Parser) consume_hex() ?string {
 	for {
 		if p.end_of_file() { break }
 
-		if (p.next_char().is_hex_digit())  {
+		if p.next_char().is_hex_digit()  {
 			lit += p.consume_char().str()
 		} else {
 			break
@@ -337,7 +335,7 @@ fn (p mut Parser) consume_hex() ?string {
 }
 
 
-fn (p mut Parser) consume_integral() ?string {
+fn (mut p Parser) consume_integral() ?string {
 	// intLit     = decimalLit | octalLit | hexLit
 
 	if x := p.consume_hex() { return x }
@@ -353,7 +351,7 @@ struct NumericConstant {
 	floating bool
 }
 
-fn (p mut Parser) consume_numeric_constant() ?NumericConstant {
+fn (mut p Parser) consume_numeric_constant() ?NumericConstant {
 	mut lit := p.consume_integral() or {
 		// "inf" and "nan" are both valid so check those
 
@@ -377,7 +375,7 @@ fn (p mut Parser) consume_numeric_constant() ?NumericConstant {
 	// decimals  = decimalDigit { decimalDigit }
 	// exponent  = ( "e" | "E" ) [ "+" | "-" ] decimals 
 
-	if (p.next_char() != `.` && p.next_char().str().to_lower() != 'e') {
+	if p.next_char() != `.` && p.next_char().str().to_lower() != 'e' {
 		return NumericConstant{lit, false}
 	}
 
@@ -428,7 +426,7 @@ fn (p mut Parser) consume_numeric_constant() ?NumericConstant {
 	return NumericConstant{lit, true}
 }
 
-fn (p mut Parser) consume_bool_lit() ?string {
+fn (mut p Parser) consume_bool_lit() ?string {
 	next_ident := p.next_ident()
 	
 	if next_ident == 'true' || next_ident == 'false' {
@@ -438,7 +436,7 @@ fn (p mut Parser) consume_bool_lit() ?string {
 	return none
 }
 
-fn (p mut Parser) consume_lit() ?Literal {
+fn (mut p Parser) consume_lit() ?Literal {
 	// constant = fullIdent | ( [ "-" | "+" ] intLit ) | ( [ "-" | "+" ] floatLit ) |
     //             strLit | boolLit 
 
@@ -449,7 +447,7 @@ fn (p mut Parser) consume_lit() ?Literal {
 		} 
 		
 		if lit := p.consume_string() {
-			return Literal{LitType.str, lit}
+			return Literal{LitType.str_, lit}
 		}
 	}
 	// then try int / float with optional + -
@@ -479,14 +477,14 @@ fn (p mut Parser) consume_lit() ?Literal {
 	return none
 }
 
-fn (p mut Parser) consume_syntax() {
+fn (mut p Parser) consume_syntax() {
 	p.consume_whitespace()
 
 	// syntax = "syntax" "=" quote "proto2" quote ";"
 
 	// if there is no 'syntax' then this cant be parsed right now
 	if p.next_full_ident() != 'syntax' { 
-		p.current_file().syntax = .proto2
+		f := p.current_file() f.syntax = .proto2
 		return 
 	}
 
@@ -507,14 +505,14 @@ fn (p mut Parser) consume_syntax() {
 	if p.consume_char() != `;` { p.report_error('Expected `;` in syntax statement') }
 
 	if proto_version == 'proto2' {
-		p.current_file().syntax = .proto2
+		f := p.current_file() f.syntax = .proto2
 	} else if proto_version == 'proto3' {
-		p.current_file().syntax = .proto3
+		f := p.current_file() f.syntax = .proto3
 	}
 }
 
 // TODO should these return ?Import and then Parser.parse() adds them?
-fn (p mut Parser) consume_import() bool {
+fn (mut p Parser) consume_import() bool {
 	p.consume_whitespace()
 
 	if p.next_chars(6) != 'import' {
@@ -550,12 +548,12 @@ fn (p mut Parser) consume_import() bool {
 
 	if p.consume_char() != `;` { p.report_error('Expected `;` in import statement') }
 
-	p.current_file().imports << &Import{weak, public, package}
+	f := p.current_file() f.imports << &Import{weak, public, package}
 
 	return true
 }
 
-fn (p mut Parser) consume_package() bool  {
+fn (mut p Parser) consume_package() bool  {
 	p.consume_whitespace()
 
 	// package = "package" fullIdent ";"
@@ -581,12 +579,12 @@ fn (p mut Parser) consume_package() bool  {
 
 	if p.consume_char() != `;` { p.report_error('Expected `;` in package statement') }
 
-	p.current_file().package = ident
+	f := p.current_file() f.package = ident
 
 	return true
 }
 
-fn (p mut Parser) consume_option() ?&OptionField {
+fn (mut p Parser) consume_option() ?&OptionField {
 	p.consume_whitespace()
 
 	// option = "option" optionName  "=" constant ";"
@@ -622,7 +620,7 @@ fn (p mut Parser) consume_option() ?&OptionField {
 	return &OptionField{ident, lit}
 }
 
-fn (p mut Parser) consume_option_ident() ?string {
+fn (mut p Parser) consume_option_ident() ?string {
 	mut ident := ''
 	
 	if p.next_char() == `(` {
@@ -661,12 +659,12 @@ fn (p mut Parser) consume_option_ident() ?string {
 	return ident
 }
 
-fn (p mut Parser) consume_field_options() []&FieldOption {
+fn (mut p Parser) consume_field_options() []&FieldOption {
 	if p.next_char() != `[` { return [] }
 
 	p.consume_char()
 
-	mut options := []&FieldOption
+	mut options := []&FieldOption{}
 
 	for {
 		p.consume_whitespace()
@@ -708,7 +706,7 @@ fn (p mut Parser) consume_field_options() []&FieldOption {
 
 
 
-fn (p mut Parser) consume_enum_field() ?&EnumField {
+fn (mut p Parser) consume_enum_field() ?&EnumField {
 	// enumField = ident "=" intLit [ "[" enumValueOption { ","  enumValueOption } "]" ]";"
 	// enumValueOption = optionName "=" constant
 
@@ -747,11 +745,11 @@ fn (p mut Parser) consume_enum_field() ?&EnumField {
 }
 
 
-fn (p mut Parser) consume_enum_body(name string, typ &Type) &Enum {
+fn (mut p Parser) consume_enum_body(name string, typ &Type) &Enum {
 	// enumBody = "{" { option | enumField | emptyStatement } "}"
 
-	mut options := []&OptionField
-	mut fields := []&EnumField
+	mut options := []&OptionField{}
+	mut fields := []&EnumField{}
 
 	for {
 		mut consumed_something := false
@@ -783,7 +781,7 @@ fn (p mut Parser) consume_enum_body(name string, typ &Type) &Enum {
 	return &Enum{name, options, fields, typ}
 }
 
-fn (p mut Parser) consume_enum() ?&Enum {
+fn (mut p Parser) consume_enum() ?&Enum {
 	// enum = "enum" enumName enumBody
 
 	if p.next_full_ident() != 'enum' {
@@ -813,7 +811,7 @@ fn (p mut Parser) consume_enum() ?&Enum {
 	return e
 }
 
-fn (p mut Parser) consume_field_type(limit_types bool) ?string {
+fn (mut p Parser) consume_field_type(limit_types bool) ?string {
 	ident := p.next_full_ident()
 
 	if ident in valid_types {
@@ -840,7 +838,7 @@ fn (p mut Parser) consume_field_type(limit_types bool) ?string {
 	return none
 }
 
-fn (p mut Parser) consume_field(is_oneof_field bool) ?&Field {
+fn (mut p Parser) consume_field(is_oneof_field bool) ?&Field {
 	// field = label type fieldName "=" fieldNumber [ "[" fieldOptions "]" ] ";"
 	// fieldOptions = fieldOption { ","  fieldOption }
 	// fieldOption = optionName "=" constant
@@ -909,7 +907,7 @@ fn (p mut Parser) consume_field(is_oneof_field bool) ?&Field {
 }
 
 
-fn (p mut Parser) consume_extend() ?&Extend {
+fn (mut p Parser) consume_extend() ?&Extend {
 	if p.next_full_ident() != 'extend' {
 		return none
 	}
@@ -927,7 +925,7 @@ fn (p mut Parser) consume_extend() ?&Extend {
 
 	if p.consume_char() != `{` { p.report_error('Expected `{` after extend identifer') }
 
-	mut fields := []&Field
+	mut fields := []&Field{}
 
 	for {
 		p.consume_whitespace()
@@ -951,8 +949,8 @@ fn (p mut Parser) consume_extend() ?&Extend {
 
 }
 
-fn (p mut Parser) consume_ranges() ?[]string {
-	mut ranges := []string
+fn (mut p Parser) consume_ranges() ?[]string {
+	mut ranges := []string{}
 
 	for {
 		if p.end_of_file() { p.report_error('End of file reached in extensions statement') }
@@ -998,7 +996,7 @@ fn (p mut Parser) consume_ranges() ?[]string {
 
 
 
-fn (p mut Parser) consume_extension() ?&Extension {
+fn (mut p Parser) consume_extension() ?&Extension {
 	if p.next_full_ident() != 'extensions' {
 		return none
 	}
@@ -1015,7 +1013,7 @@ fn (p mut Parser) consume_extension() ?&Extension {
 
 
 
-fn (p mut Parser) consume_oneof() ?&Oneof {
+fn (mut p Parser) consume_oneof() ?&Oneof {
 	if p.next_full_ident() != 'oneof' {
 		return none
 	}
@@ -1032,7 +1030,7 @@ fn (p mut Parser) consume_oneof() ?&Oneof {
 	p.consume_whitespace()
 	if p.consume_char() != `{` { p.report_error('expected `{` after identifier') }
 
-	mut fields := []&Field
+	mut fields := []&Field{}
 
 	for {
 		p.consume_whitespace()
@@ -1055,7 +1053,7 @@ fn (p mut Parser) consume_oneof() ?&Oneof {
 
 
 
-fn (p mut Parser) consume_map_field() ?&MapField {
+fn (mut p Parser) consume_map_field() ?&MapField {
 	if p.next_full_ident() != 'map' {
 		return none
 	}
@@ -1105,7 +1103,7 @@ fn (p mut Parser) consume_map_field() ?&MapField {
 	return &MapField{ident, key_type, value_type, number}
 }
 
-fn (p mut Parser) consume_reserved() ?&Reserved {
+fn (mut p Parser) consume_reserved() ?&Reserved {
 	// reserved = "reserved" ( ranges | fieldNames ) ";"
 	// fieldNames = fieldName { "," fieldName }
 
@@ -1119,7 +1117,7 @@ fn (p mut Parser) consume_reserved() ?&Reserved {
 
 	if p.next_char() == `"` {
 		// This is reserved on field names not ranges
-		mut reserved := []string
+		mut reserved := []string{}
 		for {
 			if p.end_of_file() { p.report_error('reached end of file in reserved field') }
 
@@ -1150,19 +1148,19 @@ fn (p mut Parser) consume_reserved() ?&Reserved {
 	}
 }
 
-fn (p mut Parser) consume_message_body(name string, typ &Type) &Message {
+fn (mut p Parser) consume_message_body(name string, typ &Type) &Message {
 	// messageBody = "{" { field | enum | message | extend | extensions | group |
 	// option | oneof | mapField | reserved | emptyStatement } "}"
 
-	mut fields := []&Field
-	mut enums := []&Enum
-	mut messages := []&Message
-	mut extends := []&Extend
-	mut extensions := []&Extension
-	mut options := []&OptionField
-	mut oneofs := []&Oneof
-	mut map_fields := []&MapField
-	mut reserveds := []&Reserved
+	mut fields := []&Field{}
+	mut enums := []&Enum{}
+	mut messages := []&Message{}
+	mut extends := []&Extend{}
+	mut extensions := []&Extension{}
+	mut options := []&OptionField{}
+	mut oneofs := []&Oneof{}
+	mut map_fields := []&MapField{}
+	mut reserveds := []&Reserved{}
 
 	for {
 		mut consumed_something := false
@@ -1222,7 +1220,7 @@ fn (p mut Parser) consume_message_body(name string, typ &Type) &Message {
 
 }
 
-fn (p mut Parser) consume_message() ?&Message {
+fn (mut p Parser) consume_message() ?&Message {
 	// message = "message" messageName messageBody
 
 	if p.next_full_ident() != 'message' {
@@ -1257,7 +1255,7 @@ fn (p mut Parser) consume_message() ?&Message {
 	return message
 }
 
-fn (p mut Parser) consume_service() ?&Service {
+fn (mut p Parser) consume_service() ?&Service {
 	if p.next_full_ident() != 'service' {
 		return none
 	}
@@ -1289,7 +1287,7 @@ fn (p mut Parser) consume_service() ?&Service {
 	return &Service{name: name}
 }
 
-fn (p mut Parser) consume_top_level_def() bool {
+fn (mut p Parser) consume_top_level_def() bool {
 	// topLevelDef = message | enum | extend | service
 
 	p.consume_whitespace()
@@ -1297,26 +1295,26 @@ fn (p mut Parser) consume_top_level_def() bool {
 	mut consumed := false
 	
 	if m := p.consume_message() {
-		p.current_file().messages << m
+		f := p.current_file() f.messages << m
 		consumed = true
 	}
 	if e := p.consume_enum() {
-		p.current_file().enums << e
+		f := p.current_file() f.enums << e
 		consumed = true
 	}
 	if ex := p.consume_extend() {
-		p.current_file().extends << ex
+		f := p.current_file() f.extends << ex
 		consumed = true
 	}
 	if s := p.consume_service() {
-		p.current_file().services << s
+		f := p.current_file() f.services << s
 		consumed = true
 	}
 
 	return consumed
 }
 
-fn (p mut Parser) consume_empty_statement() bool {
+fn (mut p Parser) consume_empty_statement() bool {
 	p.consume_whitespace()
 
 	if !p.end_of_file() && p.next_char() == `;` {
@@ -1328,7 +1326,7 @@ fn (p mut Parser) consume_empty_statement() bool {
 	return false
 }
 
-pub fn (p mut Parser) parse() {
+pub fn (mut p Parser) parse() {
 	p.type_table = &TypeTable{}
 
 	for i := 0; ; i++ {
@@ -1366,7 +1364,7 @@ pub fn (p mut Parser) parse() {
 			
 			if o := p.consume_option() {
 				consumed_something = true
-				p.current_file().options << o
+				f := p.current_file() f.options << o
 			}
 
 			if p.consume_top_level_def() { consumed_something = true }
@@ -1386,7 +1384,8 @@ pub fn (p mut Parser) parse() {
 		for _, im in p.current_file().imports {
 			// TODO if the proto isnt in this folder than we need to check
 			// other include folders for it
-			mut new_path := os.realpath(filepath.join(os.realpath(p.current_file().path).all_before_last(os.path_separator), im.package))
+			current_file_path := os.real_path(p.current_file().path).all_before_last(os.path_separator)
+			mut new_path := os.real_path(os.join_path(current_file_path, im.package))
 
 
 			if !p.quiet { println('importing $im.package ...') }
@@ -1398,7 +1397,7 @@ pub fn (p mut Parser) parse() {
 
 				// Check in the import paths
 				for _, im_path in p.imports {
-					path := os.realpath(filepath.join(os.realpath(im_path), im.package))
+					path := os.real_path(os.join_path(os.real_path(im_path), im.package))
 
 					if !p.quiet { println('> Trying $path') }
 					
@@ -1425,11 +1424,11 @@ pub fn (p mut Parser) parse() {
 	}
 }
 
-fn (p mut Parser) enter_new_type_scope(name string) {
+fn (mut p Parser) enter_new_type_scope(name string) {
 	p.type_context << name
 }
 
-fn (p mut Parser) exit_type_scope() {
+fn (mut p Parser) exit_type_scope() {
 	p.type_context = p.type_context[..p.type_context.len-1]
 }
 
@@ -1531,7 +1530,7 @@ fn (p &Parser) check_message_field_types(type_context []string, message &Message
 	for _, field in message.fields {
 		if field.t in valid_types { continue }
 		
-		if x := p.type_table.lookup_type(message_type_context, field.t) {
+		if _ := p.type_table.lookup_type(message_type_context, field.t) {
 			continue
 		}
 

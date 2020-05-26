@@ -41,14 +41,14 @@ fn to_v_message_name(context []string, name string) string {
 	return struct_name
 }
 
-pub enum type_type {
+enum TypeType {
 	message enum_ other
 }
 
 // Returns all the names that are needed from a type
 struct TypeNames {
 	// Whether this is an enum message or other
-	tt type_type
+	tt TypeType
 
 	// For use in types
 	// e.g. TestEnum or TestMessageInnerTestMessage
@@ -84,13 +84,13 @@ fn escape_name(name string) string {
 }
 
 // TODO come up with a better name for this
-fn type_to_type(current_package string, type_table &TypeTable, context []string, t string) (string, type_type) {
+fn type_to_type(current_package string, type_table &TypeTable, context []string, t string) (string, TypeType) {
 	if t in valid_types {
-		return valid_types_v[valid_types.index(t)], type_type.other
+		return valid_types_v[valid_types.index(t)], TypeType.other
 	}
 
 	if typ := type_table.lookup_type(context, t) {
-		type_type := if typ.is_enum { type_type.enum_ } else { type_type.message }
+		type_type := if typ.is_enum { TypeType.enum_ } else { TypeType.message }
 
 		fname := typ.full_name
 

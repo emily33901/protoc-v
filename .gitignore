@@ -1,1 +1,6 @@
 fns.txt
+*.exe
+test-output/
+*.pdb
+*.ilk
+.vs/

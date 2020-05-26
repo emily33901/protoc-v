@@ -20,7 +20,7 @@ mut:
 	current_package string
 }
 
-fn (g mut Gen) gen_file_header(f &File) {
+fn (mut g Gen) gen_file_header(f &File) {
 	// TODO figure out an appropriate module
 	// if the file doesnt have an explicit package set
 
@@ -31,12 +31,12 @@ module main
 import vproto
 
 pub const (
-	// v_package = \'$g.current_package\'
+	v_package = \'$g.current_package\'
 )
 ')
 }
 
-fn (g mut Gen) gen_enum_definition(type_context []string, e &Enum) {
+fn (mut g Gen) gen_enum_definition(type_context []string, e &Enum) {
 	names := message_names(type_context, e.name)
 	
 	e_name := names.struct_name
@@ -66,14 +66,18 @@ fn (g mut Gen) gen_enum_definition(type_context []string, e &Enum) {
 }
 
 // TODO When type_to_type changes name change this name too ! 
-fn (g mut Gen) type_to_type(context []string, t string) (string, type_type) {
+fn (mut g Gen) type_to_type(context []string, t string) (string, TypeType) {
 	mut full_context := [g.current_package]
 	full_context << context
 
-	return type_to_type(g.current_package, g.type_table, full_context, t)
+	// TODO revert when vlang #5028 is resolved
+	x, y := type_to_type(g.current_package, g.type_table, full_context, t)
+
+
+	return x, y
 }
 
-fn (g &Gen) type_pack_name(pack_or_unpack string, field_proto_type string, field_v_type string field_type_type type_type) string {
+fn (g &Gen) type_pack_name(pack_or_unpack string, field_proto_type string, field_v_type string, field_type_type TypeType) string {
 	match field_type_type {
 		.other {
 			match field_proto_type {
@@ -146,18 +150,10 @@ fn (g &Gen) type_pack_name(pack_or_unpack string, field_proto_type string, field
 		.enum_, .message {
 			return '${pack_or_unpack}_$field_v_type'
 		}
-
-		.message {
-			return '${pack_or_unpack}_$field_v_type'
-		}
-
-		else {
-			panic('unkown field_type_type `$field_type_type`')
-		}
 	}
 }
 
-fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_type string, field_type_type type_type, name, number string) (string, string) {
+fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_type string, field_TypeType TypeType, name, number string) (string, string) {
 	// This needs to be fixed up so that the indentation is on the correct level!
 
 	mut pack_text := ''
@@ -165,47 +161,47 @@ fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_t
 
 	match label {
 		'optional', 'required' {
-			pack_inside := g.type_pack_name('pack', field_proto_type, field_v_type, field_type_type)
-			unpack_inside := g.type_pack_name('unpack', field_proto_type, field_v_type, field_type_type)
+			pack_inside := g.type_pack_name('pack', field_proto_type, field_v_type, field_TypeType)
+			unpack_inside := g.type_pack_name('unpack', field_proto_type, field_v_type, field_TypeType)
 
-			unpack_text += '\t\t$number {\n'
+			unpack_text += '$number {\n'
 
 			if label == 'optional' {
-				pack_text += '\tif o.has_$name {\n\t'
+				pack_text += 'if o.has_$name {\n'
 
-				unpack_text += '\t\t\t\tres.has_$name = true\n'
+				unpack_text += 'res.has_$name = true\n'
 			}
 
-			pack_text += '\tres << ${pack_inside}(o.$name, $number)\n'
+			pack_text += 'res << ${pack_inside}(o.$name, $number)\n'
 
 			if label == 'optional' {
-				pack_text += '\t}\n'
+				pack_text += '}\n'
 			}
 
 			// unpack text at this point is inside of a match statement checking tag numbers
 
 			// TODO make this into a oneliner again once match bug is fixed
 
-			unpack_text += '\t\t\t\tii, v := ${unpack_inside}(cur_buf, tag_wiretype.wire_type)\n'
-			unpack_text += '\t\t\t\tres.$name = v\n'
-			unpack_text += '\t\t\t\ti = ii\n'
-			unpack_text += '\t\t\t}\n'
+			unpack_text += 'ii, v := ${unpack_inside}(cur_buf, tag_wiretype.wire_type)\n'
+			unpack_text += 'res.$name = v\n'
+			unpack_text += 'i = ii\n'
+			unpack_text += '}\n'
 		}
  
 		'repeated' {
-			pack_inside := g.type_pack_name('pack', field_proto_type, field_v_type[1..], field_type_type)
-			unpack_inside := g.type_pack_name('unpack', field_proto_type, field_v_type[1..], field_type_type)
+			pack_inside := g.type_pack_name('pack', field_proto_type, field_v_type[1..], field_TypeType)
+			unpack_inside := g.type_pack_name('unpack', field_proto_type, field_v_type[1..], field_TypeType)
 
 			// TODO we need to handle the packed case here aswell!
-			pack_text += '\tfor _, x in o.$name {\n'
-			pack_text += '\t\tres << ${pack_inside}(x, $number)\n'
-			pack_text += '\t}\n'
+			pack_text += 'for _, x in o.$name {\n'
+			pack_text += 'res << ${pack_inside}(x, $number)\n'
+			pack_text += '}\n'
 
-			unpack_text += '\t\t\t$number {\n'
-			unpack_text += '\t\t\t\tii, v := ${unpack_inside}(cur_buf, tag_wiretype.wire_type)\n'
-			unpack_text += '\t\t\t\tres.$name << v\n'
-			unpack_text += '\t\t\t\ti = ii\n'
-			unpack_text += '\t\t\t}\n'
+			unpack_text += '$number {\n'
+			unpack_text += 'ii, v := ${unpack_inside}(cur_buf, tag_wiretype.wire_type)\n'
+			unpack_text += 'res.$name << v\n'
+			unpack_text += 'i = ii\n'
+			unpack_text += '}\n'
 		}
 
 		else {
@@ -217,8 +213,8 @@ fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_t
 	return pack_text, unpack_text
 }
 
-fn (g mut Gen) gen_message_internal(type_context []string, m &Message) {
-	m_names := type_to_names(m.typ)
+fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
+	// m_names := type_to_names(m.typ)
 
 	// TODO replace with message_namess
 	m_name := to_v_message_name(type_context, m.name)
@@ -247,7 +243,7 @@ fn (g mut Gen) gen_message_internal(type_context []string, m &Message) {
 	mut field_unpack_text := new_writer()
 
 	field_pack_text.l('pub fn (o &$m_name) pack() []byte {')
-	field_pack_text.l('${pack_unpack_mut}res := []byte') // TODO allocate correct size statically
+	field_pack_text.l('${pack_unpack_mut}res := []byte{}') // TODO allocate correct size statically
 	
 	field_unpack_text.l('pub fn ${m_full_name}_unpack(buf []byte) ?$m_name {')
 	field_unpack_text.l('${pack_unpack_mut}res := $m_name{}')
@@ -293,7 +289,7 @@ fn (g mut Gen) gen_message_internal(type_context []string, m &Message) {
 
 		if field_type_type == .enum_ || field_type_type == .message {
 			names := message_names([], field.t)
-			n := (field.type_context.join('') + names.lowercase_name).to_lower()
+			// n := (field.type_context.join('') + names.lowercase_name).to_lower()
 			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, names.lowercase_name, field_type_type, name, field.number)
 		} else {
 			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, field_type, field_type_type, name, field.number)
@@ -330,7 +326,7 @@ fn (g mut Gen) gen_message_internal(type_context []string, m &Message) {
 
 	// Function for creating a new of that message
 
-	g.w.l('pub fn new_${m_full_name}() $m_name {\n')
+	g.w.l('pub fn new_${m_full_name}() $m_name {')
 	g.w.l('return $m_name{}')
 	g.w.l('}')
 
@@ -351,7 +347,7 @@ fn (g mut Gen) gen_message_internal(type_context []string, m &Message) {
 	// TODO oneof, maps and similar
 }
 
-pub fn (g mut Gen) gen_file_text(f &File) string {
+pub fn (mut g Gen) gen_file_text(f &File) string {
 	g.current_package = f.package
 	g.gen_file_header(f)
 

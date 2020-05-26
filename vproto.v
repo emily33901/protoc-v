@@ -2,7 +2,12 @@ module main
 
 import flag
 import os
-import filepath
+
+import v.table
+import v.parser
+import v.pref
+import v.fmt
+import v.ast
 
 import compiler
 
@@ -27,21 +32,32 @@ fn parse_args() Args {
 
 	fp.skip_executable()
 
-	args.filename = fp.string('filename', '', 'Filename of proto to parse')
-	args.out_folder = fp.string('out_dir', '', 'Output folder of V file')
+	args.filename = fp.string('filename', `f`, '', 'Filename of proto to parse')
+	args.out_folder = fp.string('out_dir', `o`, '', 'Output folder of V file')
 
 	im := fp.string_multi('import', `i`, 'Add a directory to imports')
 
 	args.imports << im
 
-	args.quiet = fp.bool('quiet', false, 'Supress warnings and messages')
+	args.quiet = fp.bool('quiet',`q`, false, 'Supress warnings and messages')
 
-	args.additional = fp.finalize() or {
-		// Just make sure we get a usage message
-		return Args{fp: fp}
-	}
+	// TODO revert when vlang #5039 is fixed
+	additional := fp.finalize() or { []string{} }
+
+	args.additional = additional
 
 	return args
+}
+
+fn format_file(path string) {
+	table := table.new_table()
+	ast_file := parser.parse_file(path, table, .parse_comments, &pref.Preferences{}, &ast.Scope{
+		parent: 0
+	})
+
+	result := fmt.fmt(ast_file, table, false)
+
+	os.write_file(path, result)
 }
 
 fn main() {
@@ -59,21 +75,26 @@ fn main() {
 		return
 	}
 
-	mut p := compiler.Parser{file_inputs: [args.filename], imports: args.imports, quiet: args.quiet}
+	mut p := compiler.Parser{file_inputs: [args.filename], imports: args.imports, quiet: args.quiet, type_table: &compiler.TypeTable{}}
+
+	println('Before parsing')
 
 	p.parse()
+
+	println('Parsing completed')
+
 	p.validate()
 
 	mut g := compiler.new_gen(&p)
 
 	for _, f in p.files[..1] {
-		filename := os.realpath(f.filename).all_after(os.path_separator).all_before_last('.') + '.pb.v'
+		filename := os.real_path(f.filename).all_after_last(os.path_separator).all_before_last('.') + '.pb.v'
 
-		path := filepath.join(os.realpath(args.out_folder), filename)
+		path := os.join_path(os.real_path(args.out_folder), filename)
 
 		println('$path')
 
 		os.write_file(path, g.gen_file_text(f))
-		// println('$f.filename:\n=====\n${g.gen_file_text(f)}')
+		format_file(path)
 	}
 }

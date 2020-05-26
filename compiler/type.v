@@ -15,20 +15,24 @@ pub struct Type {
 }
 
 pub fn new_type(context []string, name string, is_enum, is_message bool, file &File) &Type {
-	mut full_name_pieces := []string
+	mut full_name_pieces := []string{}
 
-	mut context_no_pkg := []string
+	mut context_no_pkg := []string{}
+
+	// TODO cleanup when vlang #5041 is fixed
 
 	// no package?
 	if context[0].len == 0 {
 		if context.len > 1 {
-			full_name_pieces = context[1..].clone()
+			fnp := context[1..]
+			full_name_pieces = fnp.clone()
 			context_no_pkg = full_name_pieces.clone()
 		}
 	} else {
 		full_name_pieces = context.clone()
 
-		context_no_pkg = context[1..].clone()
+		fnp := context[1..]
+		context_no_pkg = fnp.clone()
 	}
 
 	full_name_pieces << name
@@ -63,13 +67,13 @@ pub fn (t TypeTable) str() string {
 	return ret
 }
 
-pub fn (table mut TypeTable) add_message(t &Type, m &Message) {
+pub fn (mut table  TypeTable) add_message(t &Type, m &Message) {
 	// TODO make sure that type isnt already in table
 	table.table[t.full_name] = t
 	table.messages[t.full_name] = m
 }
 
-pub fn (table mut TypeTable) add_enum(t &Type, e &Enum) {
+pub fn (mut table  TypeTable) add_enum(t &Type, e &Enum) {
 	// TODO make sure that type isnt already in table
 	table.table[t.full_name] = t
 	table.enums[t.full_name] = e

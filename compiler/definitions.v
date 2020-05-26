@@ -1,17 +1,17 @@
 module compiler
 
 // Protobuf definitions
-
 enum LitType {
 	ident = 0
 	integral
 	float
-	str
+	// TODO revert when vlang #5040 is fixed
+	str_
 	boolean
 }
 
 struct Literal {
-	t LitType [json:'type']
+	t     LitType
 	value string
 }
 
@@ -27,14 +27,13 @@ pub fn (s SrcLoc) str() string {
 }
 
 pub struct Import {
-	weak bool
-	public bool
+	weak    bool
+	public  bool
 	package string
 }
 
 // TODO make the distinction between OptionField and FieldOption more distinct
 // or roll them up into one thing!
-
 pub struct OptionField {
 	ident string
 	value Literal
@@ -46,56 +45,50 @@ pub struct FieldOption {
 }
 
 pub struct EnumField {
-	name string
-	value Literal // int literal
-
+	name    string
+	value   Literal // int literal
 	options []&FieldOption
 }
 
 pub struct Enum {
-	name string
+	name    string
 	options []&OptionField
-	fields []&EnumField
-
-	typ &Type
+	fields  []&EnumField
+	typ     &Type
 }
 
 const (
-	valid_types = ['double', 'float',
-					'int32', 'int64',
-					'uint32', 'uint64',
-					'sint32', 'sint64',
-					'fixed32', 'fixed64',
-					'sfixed32', 'sfixed64',
-					'bool', 'string', 'bytes']
-
-	valid_types_v = ['f64', 'f32', 
-					'int', 'i64',
-					'u32', 'u64',
-					'int', 'i64',
-					'u32', 'u64',
-					'int', 'i64',
-					'bool', 'string', '[]byte']
-
-	keywords_v = ['type', 'error']
+	valid_types   = [
+		'double', 'float',
+		'int32', 'int64',
+		'uint32', 'uint64',
+		'sint32', 'sint64',
+		'fixed32', 'fixed64',
+		'sfixed32', 'sfixed64',
+		'bool', 'string', 'bytes']
+	valid_types_v = [
+		'f64', 'f32',
+		'int', 'i64',
+		'u32', 'u64',
+		'int', 'i64',
+		'u32', 'u64',
+		'int', 'i64',
+		'bool', 'string', '[]byte']
+	keywords_v    = ['type', 'error']
 )
 
 pub struct Field {
-	label string
-	name string
-	t string [json:'type']
-
-	// this is stored so we dont have to
+	label        string
+	name         string
+	t            string
 	// recreate it in gen
 	type_context []string
-	number string // int literal
-
-	options []&FieldOption
+	number       string // int literal
+	options      []&FieldOption
 }
 
 pub struct Extend {
-	t string [json:'type']
-
+	t      string
 	fields []&Field
 }
 
@@ -104,53 +97,44 @@ pub struct Extension {
 }
 
 pub struct Oneof {
-	name string
-
+	name   string
 	fields []&Field
 }
 
 pub struct MapField {
-	name string
-	
-	key_type string
+	name       string
+	key_type   string
 	value_type string
-
-	number string // int literal
+	number     string // int literal
 }
 
 pub struct Reserved {
 	is_ranges bool
-	fields []string
+	fields    []string
 }
 
 pub struct Message {
-	name string
-
-	fields []&Field
-	enums []&Enum
-	messages []&Message [skip]
-	extends []&Extend
+	name       string
+	fields     []&Field
+	enums      []&Enum
+	messages   []&Message
+	extends    []&Extend
 	extensions []&Extension
-	options []&OptionField
-	oneofs []&Oneof
+	options    []&OptionField
+	oneofs     []&Oneof
 	map_fields []&MapField
-	reserveds []&Reserved
-
-	typ &Type
+	reserveds  []&Reserved
+	typ        &Type
 }
 
 pub struct ServiceMethod {
-	name string
-	arg_type string
-
+	name        string
+	arg_type    string
 	return_type string
 }
 
-
 pub struct Service {
-	name string
-
-	method []&ServiceMethod
-
+	name    string
+	method  []&ServiceMethod
 	options []&OptionField
 }
