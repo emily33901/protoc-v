@@ -29,6 +29,8 @@ pub fn (s SrcLoc) str() string {
 pub struct Import {
 	weak    bool
 	public  bool
+
+mut:
 	package string
 }
 

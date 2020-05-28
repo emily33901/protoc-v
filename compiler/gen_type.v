@@ -25,10 +25,14 @@ fn to_v_struct_name(name string) string {
 	return new_name
 }
 
-fn to_v_message_name(context []string, name string) string {
+fn to_v_message_name(pkg_prefix string, context []string, name string) string {
 	mut struct_name := ''
 	
 	for _, part in context {
+		if part == '' {
+			continue
+		}
+
 		struct_name += to_v_struct_name(part)
 	}
 
@@ -38,39 +42,11 @@ fn to_v_message_name(context []string, name string) string {
 
 	struct_name = struct_name.replace_each(['.', ''])
 
-	return struct_name
+	return pkg_prefix + struct_name
 }
 
 enum TypeType {
 	message enum_ other
-}
-
-// Returns all the names that are needed from a type
-struct TypeNames {
-	// Whether this is an enum message or other
-	tt TypeType
-
-	// For use in types
-	// e.g. TestEnum or TestMessageInnerTestMessage
-	type_name string
-
-	// For use in fields
-	// e.g. pack_testmessage
-	field_name string
-}
-
-fn type_to_names(t &Type) TypeNames {
-	return TypeNames{
-		type_name: to_v_message_name(t.context_no_pkg, t.name)
-	}
-}
-
-fn enum_to_names(e &Enum) TypeNames {
-	return type_to_names(e.typ)
-}
-
-fn message_to_names(m &Message) TypeNames {
-	return type_to_names(m.typ)
 }
 
 fn escape_name(name string) string {
@@ -89,26 +65,31 @@ fn type_to_type(current_package string, type_table &TypeTable, context []string,
 		return valid_types_v[valid_types.index(t)], TypeType.other
 	}
 
-	if typ := type_table.lookup_type(context, t) {
+	if found := type_table.lookup_type(context, t) {
+		typ := found.t
+		found_context := found.context
+
+		pkg_prefix := if typ.package == current_package { '' } else { typ.package.all_after_last('.') + '.' }
+		
 		type_type := if typ.is_enum { TypeType.enum_ } else { TypeType.message }
 
-		fname := typ.full_name
+		fname := typ.name
 
 		if fname.starts_with('.$current_package') {
-			return to_v_message_name([], typ.full_name['.$current_package'.len..]), type_type
+			return to_v_message_name(pkg_prefix, typ.context_no_pkg, fname['.$current_package'.len..]), type_type
 		}
 
-		if typ.full_name[0] == `.` {
-			return to_v_message_name([], typ.full_name[1..]), type_type
+		if fname[0] == `.` {
+			return to_v_message_name(pkg_prefix, typ.context_no_pkg, fname[1..]), type_type
 		}
 
-		return to_v_message_name([], typ.full_name), type_type
-	}
-
+		return to_v_message_name(pkg_prefix, typ.context_no_pkg, fname), type_type
+	} 
+	
 	// By this point in the compiler we should know all the types
 	// otherwise we shouldnt be trying to generate code for them!
 
-	panic('Unknown type `$t`\ntable was:\n${type_table.str()}')
+	panic('Unknown type `$t`\ntable was:\n${type_table}')
 }
 
 struct MessageNames {
@@ -123,13 +104,15 @@ struct MessageNames {
 	this_type_context []string
 }
 
-fn message_names(type_context []string, name string) MessageNames {
+fn message_names(current_package string, tt &TypeTable, type_context []string, name string) MessageNames {
 	mut this_type_context := type_context.clone()
 	this_type_context << name
 
+	real_type, _ := type_to_type(current_package, tt, type_context, name)
+
 	return MessageNames {
-		struct_name: to_v_message_name(type_context, name),
-		lowercase_name: (type_context.join('') + name).to_lower().replace_each(['.', ''])
+		struct_name: real_type,
+		lowercase_name: real_type.to_lower()
 		this_type_context: this_type_context
 	}
 }

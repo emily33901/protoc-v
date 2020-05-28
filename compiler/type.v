@@ -6,6 +6,7 @@ pub struct Type {
 	full_name_no_pkg string
 	context []string // context for this type
 	context_no_pkg []string
+	package string
 
 	// Only one of these should be set
 	is_enum bool
@@ -44,7 +45,15 @@ pub fn new_type(context []string, name string, is_enum, is_message bool, file &F
 
 	assert (is_enum || is_message) && !(is_enum && is_message)
 
-	return &Type{name, full_name, full_name_no_pkg, context.clone(), context_no_pkg, is_enum, is_message, file}
+	return &Type{name, 
+		full_name,
+		full_name_no_pkg, 
+		context.clone(), 
+		context_no_pkg,
+		file.package
+		is_enum, 
+		is_message, 
+		file}
 }
 
 pub struct TypeTable {
@@ -79,18 +88,32 @@ pub fn (mut table  TypeTable) add_enum(t &Type, e &Enum) {
 	table.enums[t.full_name] = e
 }
 
-pub fn (t &TypeTable) lookup_type(context []string, name string) ?&Type {
+pub struct FoundType {
+	t &Type
+
+	// Context that this type was found in
+	// this is needed to rebuild the typename later in gen
+	context []string
+}
+
+pub fn (t &TypeTable) lookup_type(context []string, name string) ?FoundType {
 	// There are a few things we can try here
 
 	// '$name' '.$name'
 	// '.${context.last...}.$name'
 
 	if name in t.table {
-		return t.table[name]
+		return FoundType{
+			t: t.table[name],
+			context: context
+		}
 	}
 
 	if '.$name' in t.table {
-		return t.table['.$name']
+		return FoundType{
+			t: t.table['.$name'],
+			context: context
+		}
 	}
 
 	for i := context.len; i >= 0; i-- {
@@ -98,7 +121,10 @@ pub fn (t &TypeTable) lookup_type(context []string, name string) ?&Type {
 		full_name := '.${context_full}.$name'
 
 		if full_name in t.table {
-			return t.table[full_name]
+			return FoundType{
+				t: t.table[full_name],
+				context: context_full.split('.')
+			}
 		}
 	}
 
@@ -113,9 +139,17 @@ struct LookupMessage {
 // TODO return LookupMessage
 
 pub fn (t &TypeTable) lookup_message(context []string, name string) ?&Message {
-	if typ := t.lookup_type(context, name) {
-		return t.messages[typ.full_name]
+	if found := t.lookup_type(context, name) {
+		return t.messages[found.t.full_name]
 	}
 
 	return none
+}
+
+// simplify context one by removing context2
+pub fn simplify_type_context(context1, context2 []string) []string {
+	scontext1 := context1.join('.')
+	scontext2 := context2.join('.')
+
+	return scontext1.replace(scontext2, '').split('.')
 }

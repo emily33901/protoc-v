@@ -63,38 +63,30 @@ fn format_file(path string) {
 fn main() {
 	args := parse_args()
 
-	println(args.imports)
-
 	if args.filename == '' {
 		println(args.fp.usage())
 		return
 	}
 
 	if !os.is_dir(args.out_folder) {
-		println('Output path does not exist')
-		return
+		os.mkdir(args.out_folder)
 	}
 
 	mut p := compiler.Parser{file_inputs: [args.filename], imports: args.imports, quiet: args.quiet, type_table: &compiler.TypeTable{}}
 
-	println('Before parsing')
-
 	p.parse()
-
-	println('Parsing completed')
 
 	p.validate()
 
 	mut g := compiler.new_gen(&p)
 
-	for _, f in p.files[..1] {
-		filename := os.real_path(f.filename).all_after_last(os.path_separator).all_before_last('.') + '.pb.v'
+	// We only care about saving the file that we were asked to
+	f := p.files[0]
 
-		path := os.join_path(os.real_path(args.out_folder), filename)
+	filename := os.real_path(f.filename).all_after_last(os.path_separator).all_before_last('.') + '_pb.v'
 
-		println('$path')
+	path := os.join_path(os.real_path(args.out_folder), filename)
 
-		os.write_file(path, g.gen_file_text(f))
-		format_file(path)
-	}
+	os.write_file(path, g.gen_file_text(f))
+	format_file(path)
 }

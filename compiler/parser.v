@@ -1326,6 +1326,13 @@ fn (mut p Parser) consume_empty_statement() bool {
 	return false
 }
 
+fn (mut p Parser) resolved_import(im &Import, path string) {
+	// Turn this imports path into an absolute path
+	// now that we have resolved it
+
+	im.package = path
+}
+
 pub fn (mut p Parser) parse() {
 	p.type_table = &TypeTable{}
 
@@ -1333,6 +1340,8 @@ pub fn (mut p Parser) parse() {
 		if i >= p.file_inputs.len { break }
 
 		filename := p.file_inputs[i]
+
+		println('Parsing $filename')
 
 		text := os.read_file(filename) or {
 			panic(err)
@@ -1387,7 +1396,6 @@ pub fn (mut p Parser) parse() {
 			current_file_path := os.real_path(p.current_file().path).all_before_last(os.path_separator)
 			mut new_path := os.real_path(os.join_path(current_file_path, im.package))
 
-
 			if !p.quiet { println('importing $im.package ...') }
 
 			mut found := false
@@ -1420,6 +1428,8 @@ pub fn (mut p Parser) parse() {
 			} else {
 				p.file_inputs << new_path
 			}
+
+			p.resolved_import(im, new_path)
 		}
 	}
 }
@@ -1433,7 +1443,9 @@ fn (mut p Parser) exit_type_scope() {
 }
 
 fn (p &Parser) type_scope() []string {
-	mut ctx := [p.current_file().package]
+	mut ctx := []string{}
+	package := p.current_file().package.split('.')
+	ctx << package
 	ctx << p.type_context
 	return ctx
 }
