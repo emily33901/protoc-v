@@ -67,10 +67,11 @@ fn type_to_type(current_package string, type_table &TypeTable, context []string,
 
 	if found := type_table.lookup_type(context, t) {
 		typ := found.t
-		found_context := found.context
 
 		pkg_prefix := if typ.package == current_package { '' } else { typ.package.all_after_last('.') + '.' }
 		
+		println('$typ.context_no_pkg $pkg_prefix')
+
 		type_type := if typ.is_enum { TypeType.enum_ } else { TypeType.message }
 
 		fname := typ.name

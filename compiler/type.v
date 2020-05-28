@@ -17,9 +17,6 @@ pub struct Type {
 
 pub fn new_type(context []string, name string, is_enum, is_message bool, file &File) &Type {
 	mut full_name_pieces := []string{}
-
-	mut context_no_pkg := []string{}
-
 	// TODO cleanup when vlang #5041 is fixed
 
 	// no package?
@@ -27,14 +24,12 @@ pub fn new_type(context []string, name string, is_enum, is_message bool, file &F
 		if context.len > 1 {
 			fnp := context[1..]
 			full_name_pieces = fnp.clone()
-			context_no_pkg = full_name_pieces.clone()
 		}
 	} else {
 		full_name_pieces = context.clone()
-
-		fnp := context[1..]
-		context_no_pkg = fnp.clone()
 	}
+
+	context_no_pkg := context.join('.').replace(file.package, '').split('.')
 
 	full_name_pieces << name
 

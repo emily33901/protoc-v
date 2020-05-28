@@ -4,7 +4,7 @@ module compiler
 import emily33901.vproto
 import google.protobuf
 
-pub struct ProtobufCompilerVersion {
+pub struct Version {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
@@ -18,11 +18,11 @@ pub mut:
 	has_suffix     bool
 }
 
-pub fn new_protobufcompilerversion() ProtobufCompilerVersion {
-	return ProtobufCompilerVersion{}
+pub fn new_version() Version {
+	return Version{}
 }
 
-pub fn (o &ProtobufCompilerVersion) pack() []byte {
+pub fn (o &Version) pack() []byte {
 	mut res := []byte{}
 	if o.has_major {
 		res << vproto.pack_int32_field(o.major, 1)
@@ -39,8 +39,8 @@ pub fn (o &ProtobufCompilerVersion) pack() []byte {
 	return res
 }
 
-pub fn protobufcompilerversion_unpack(buf []byte) ?ProtobufCompilerVersion {
-	mut res := ProtobufCompilerVersion{}
+pub fn version_unpack(buf []byte) ?Version {
+	mut res := Version{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -88,35 +88,35 @@ pub fn protobufcompilerversion_unpack(buf []byte) ?ProtobufCompilerVersion {
 	return res
 }
 
-pub fn pack_protobufcompilerversion(o ProtobufCompilerVersion, num u32) []byte {
+pub fn pack_version(o Version, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufcompilerversion(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufCompilerVersion) {
+pub fn unpack_version(buf []byte, tag_wiretype vproto.WireType) (int, Version) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufcompilerversion_unpack(v) or {
+	unpacked := version_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufCompilerCodeGeneratorRequest {
+pub struct CodeGeneratorRequest {
 mut:
 	unknown_fields       []vproto.UnknownField
 pub mut:
 	file_to_generate     []string
 	parameter            string
 	has_parameter        bool
-	proto_file           []protobuf.ProtobufFileDescriptorProto
-	compiler_version     ProtobufCompilerVersion
+	proto_file           []protobuf.FileDescriptorProto
+	compiler_version     Version
 	has_compiler_version bool
 }
 
-pub fn new_protobufcompilercodegeneratorrequest() ProtobufCompilerCodeGeneratorRequest {
-	return ProtobufCompilerCodeGeneratorRequest{}
+pub fn new_codegeneratorrequest() CodeGeneratorRequest {
+	return CodeGeneratorRequest{}
 }
 
-pub fn (o &ProtobufCompilerCodeGeneratorRequest) pack() []byte {
+pub fn (o &CodeGeneratorRequest) pack() []byte {
 	mut res := []byte{}
 	for _, x in o.file_to_generate {
 		res << vproto.pack_string_field(x, 1)
@@ -125,16 +125,16 @@ pub fn (o &ProtobufCompilerCodeGeneratorRequest) pack() []byte {
 		res << vproto.pack_string_field(o.parameter, 2)
 	}
 	for _, x in o.proto_file {
-		res << protobuf.pack_protobuffiledescriptorproto(x, 15)
+		res << protobuf.pack_filedescriptorproto(x, 15)
 	}
 	if o.has_compiler_version {
-		res << pack_protobufcompilerversion(o.compiler_version, 3)
+		res << pack_version(o.compiler_version, 3)
 	}
 	return res
 }
 
-pub fn protobufcompilercodegeneratorrequest_unpack(buf []byte) ?ProtobufCompilerCodeGeneratorRequest {
-	mut res := ProtobufCompilerCodeGeneratorRequest{}
+pub fn codegeneratorrequest_unpack(buf []byte) ?CodeGeneratorRequest {
+	mut res := CodeGeneratorRequest{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -156,13 +156,13 @@ pub fn protobufcompilercodegeneratorrequest_unpack(buf []byte) ?ProtobufCompiler
 				i = ii
 			}
 			15 {
-				ii, v := protobuf.unpack_protobuffiledescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := protobuf.unpack_filedescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.proto_file << v
 				i = ii
 			}
 			3 {
 				res.has_compiler_version = true
-				ii, v := unpack_protobufcompilerversion(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_version(cur_buf, tag_wiretype.wire_type)
 				res.compiler_version = v
 				i = ii
 			}
@@ -180,19 +180,19 @@ pub fn protobufcompilercodegeneratorrequest_unpack(buf []byte) ?ProtobufCompiler
 	return res
 }
 
-pub fn pack_protobufcompilercodegeneratorrequest(o ProtobufCompilerCodeGeneratorRequest, num u32) []byte {
+pub fn pack_codegeneratorrequest(o CodeGeneratorRequest, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufcompilercodegeneratorrequest(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufCompilerCodeGeneratorRequest) {
+pub fn unpack_codegeneratorrequest(buf []byte, tag_wiretype vproto.WireType) (int, CodeGeneratorRequest) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufcompilercodegeneratorrequest_unpack(v) or {
+	unpacked := codegeneratorrequest_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufCompilerCodeGeneratorResponseFile {
+pub struct CodeGeneratorResponseFile {
 mut:
 	unknown_fields      []vproto.UnknownField
 pub mut:
@@ -204,11 +204,11 @@ pub mut:
 	has_content         bool
 }
 
-pub fn new_protobufcompilercodegeneratorresponsefile() ProtobufCompilerCodeGeneratorResponseFile {
-	return ProtobufCompilerCodeGeneratorResponseFile{}
+pub fn new_codegeneratorresponsefile() CodeGeneratorResponseFile {
+	return CodeGeneratorResponseFile{}
 }
 
-pub fn (o &ProtobufCompilerCodeGeneratorResponseFile) pack() []byte {
+pub fn (o &CodeGeneratorResponseFile) pack() []byte {
 	mut res := []byte{}
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
@@ -222,8 +222,8 @@ pub fn (o &ProtobufCompilerCodeGeneratorResponseFile) pack() []byte {
 	return res
 }
 
-pub fn protobufcompilercodegeneratorresponsefile_unpack(buf []byte) ?ProtobufCompilerCodeGeneratorResponseFile {
-	mut res := ProtobufCompilerCodeGeneratorResponseFile{}
+pub fn codegeneratorresponsefile_unpack(buf []byte) ?CodeGeneratorResponseFile {
+	mut res := CodeGeneratorResponseFile{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -265,44 +265,44 @@ pub fn protobufcompilercodegeneratorresponsefile_unpack(buf []byte) ?ProtobufCom
 	return res
 }
 
-pub fn pack_protobufcompilercodegeneratorresponsefile(o ProtobufCompilerCodeGeneratorResponseFile, num u32) []byte {
+pub fn pack_codegeneratorresponsefile(o CodeGeneratorResponseFile, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufcompilercodegeneratorresponsefile(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufCompilerCodeGeneratorResponseFile) {
+pub fn unpack_codegeneratorresponsefile(buf []byte, tag_wiretype vproto.WireType) (int, CodeGeneratorResponseFile) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufcompilercodegeneratorresponsefile_unpack(v) or {
+	unpacked := codegeneratorresponsefile_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufCompilerCodeGeneratorResponse {
+pub struct CodeGeneratorResponse {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
 	error_         string
 	has_error_     bool
-	file           []ProtobufCompilerCodeGeneratorResponseFile
+	file           []CodeGeneratorResponseFile
 }
 
-pub fn new_protobufcompilercodegeneratorresponse() ProtobufCompilerCodeGeneratorResponse {
-	return ProtobufCompilerCodeGeneratorResponse{}
+pub fn new_codegeneratorresponse() CodeGeneratorResponse {
+	return CodeGeneratorResponse{}
 }
 
-pub fn (o &ProtobufCompilerCodeGeneratorResponse) pack() []byte {
+pub fn (o &CodeGeneratorResponse) pack() []byte {
 	mut res := []byte{}
 	if o.has_error_ {
 		res << vproto.pack_string_field(o.error_, 1)
 	}
 	for _, x in o.file {
-		res << pack_protobufcompilercodegeneratorresponsefile(x, 15)
+		res << pack_codegeneratorresponsefile(x, 15)
 	}
 	return res
 }
 
-pub fn protobufcompilercodegeneratorresponse_unpack(buf []byte) ?ProtobufCompilerCodeGeneratorResponse {
-	mut res := ProtobufCompilerCodeGeneratorResponse{}
+pub fn codegeneratorresponse_unpack(buf []byte) ?CodeGeneratorResponse {
+	mut res := CodeGeneratorResponse{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -319,7 +319,7 @@ pub fn protobufcompilercodegeneratorresponse_unpack(buf []byte) ?ProtobufCompile
 				i = ii
 			}
 			15 {
-				ii, v := unpack_protobufcompilercodegeneratorresponsefile(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_codegeneratorresponsefile(cur_buf, tag_wiretype.wire_type)
 				res.file << v
 				i = ii
 			}
@@ -337,13 +337,13 @@ pub fn protobufcompilercodegeneratorresponse_unpack(buf []byte) ?ProtobufCompile
 	return res
 }
 
-pub fn pack_protobufcompilercodegeneratorresponse(o ProtobufCompilerCodeGeneratorResponse, num u32) []byte {
+pub fn pack_codegeneratorresponse(o CodeGeneratorResponse, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufcompilercodegeneratorresponse(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufCompilerCodeGeneratorResponse) {
+pub fn unpack_codegeneratorresponse(buf []byte, tag_wiretype vproto.WireType) (int, CodeGeneratorResponse) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufcompilercodegeneratorresponse_unpack(v) or {
+	unpacked := codegeneratorresponse_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked

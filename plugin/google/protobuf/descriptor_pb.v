@@ -3,27 +3,27 @@ module protobuf
 
 import emily33901.vproto
 
-pub struct ProtobufFileDescriptorSet {
+pub struct FileDescriptorSet {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
-	file           []ProtobufFileDescriptorProto
+	file           []FileDescriptorProto
 }
 
-pub fn new_protobuffiledescriptorset() ProtobufFileDescriptorSet {
-	return ProtobufFileDescriptorSet{}
+pub fn new_filedescriptorset() FileDescriptorSet {
+	return FileDescriptorSet{}
 }
 
-pub fn (o &ProtobufFileDescriptorSet) pack() []byte {
+pub fn (o &FileDescriptorSet) pack() []byte {
 	mut res := []byte{}
 	for _, x in o.file {
-		res << pack_protobuffiledescriptorproto(x, 1)
+		res << pack_filedescriptorproto(x, 1)
 	}
 	return res
 }
 
-pub fn protobuffiledescriptorset_unpack(buf []byte) ?ProtobufFileDescriptorSet {
-	mut res := ProtobufFileDescriptorSet{}
+pub fn filedescriptorset_unpack(buf []byte) ?FileDescriptorSet {
+	mut res := FileDescriptorSet{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -34,7 +34,7 @@ pub fn protobuffiledescriptorset_unpack(buf []byte) ?ProtobufFileDescriptorSet {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			1 {
-				ii, v := unpack_protobuffiledescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_filedescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.file << v
 				i = ii
 			}
@@ -52,19 +52,19 @@ pub fn protobuffiledescriptorset_unpack(buf []byte) ?ProtobufFileDescriptorSet {
 	return res
 }
 
-pub fn pack_protobuffiledescriptorset(o ProtobufFileDescriptorSet, num u32) []byte {
+pub fn pack_filedescriptorset(o FileDescriptorSet, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobuffiledescriptorset(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufFileDescriptorSet) {
+pub fn unpack_filedescriptorset(buf []byte, tag_wiretype vproto.WireType) (int, FileDescriptorSet) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobuffiledescriptorset_unpack(v) or {
+	unpacked := filedescriptorset_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufFileDescriptorProto {
+pub struct FileDescriptorProto {
 mut:
 	unknown_fields       []vproto.UnknownField
 pub mut:
@@ -73,21 +73,21 @@ pub mut:
 	package              string
 	has_package          bool
 	dependency           []string
-	message_type         []ProtobufDescriptorProto
-	enum_type            []ProtobufEnumDescriptorProto
-	service              []ProtobufServiceDescriptorProto
-	extension            []ProtobufFieldDescriptorProto
-	options              ProtobufFileOptions
+	message_type         []DescriptorProto
+	enum_type            []EnumDescriptorProto
+	service              []ServiceDescriptorProto
+	extension            []FieldDescriptorProto
+	options              FileOptions
 	has_options          bool
-	source_code_info     ProtobufSourceCodeInfo
+	source_code_info     SourceCodeInfo
 	has_source_code_info bool
 }
 
-pub fn new_protobuffiledescriptorproto() ProtobufFileDescriptorProto {
-	return ProtobufFileDescriptorProto{}
+pub fn new_filedescriptorproto() FileDescriptorProto {
+	return FileDescriptorProto{}
 }
 
-pub fn (o &ProtobufFileDescriptorProto) pack() []byte {
+pub fn (o &FileDescriptorProto) pack() []byte {
 	mut res := []byte{}
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
@@ -99,28 +99,28 @@ pub fn (o &ProtobufFileDescriptorProto) pack() []byte {
 		res << vproto.pack_string_field(x, 3)
 	}
 	for _, x in o.message_type {
-		res << pack_protobufdescriptorproto(x, 4)
+		res << pack_descriptorproto(x, 4)
 	}
 	for _, x in o.enum_type {
-		res << pack_protobufenumdescriptorproto(x, 5)
+		res << pack_enumdescriptorproto(x, 5)
 	}
 	for _, x in o.service {
-		res << pack_protobufservicedescriptorproto(x, 6)
+		res << pack_servicedescriptorproto(x, 6)
 	}
 	for _, x in o.extension {
-		res << pack_protobuffielddescriptorproto(x, 7)
+		res << pack_fielddescriptorproto(x, 7)
 	}
 	if o.has_options {
-		res << pack_protobuffileoptions(o.options, 8)
+		res << pack_fileoptions(o.options, 8)
 	}
 	if o.has_source_code_info {
-		res << pack_protobufsourcecodeinfo(o.source_code_info, 9)
+		res << pack_sourcecodeinfo(o.source_code_info, 9)
 	}
 	return res
 }
 
-pub fn protobuffiledescriptorproto_unpack(buf []byte) ?ProtobufFileDescriptorProto {
-	mut res := ProtobufFileDescriptorProto{}
+pub fn filedescriptorproto_unpack(buf []byte) ?FileDescriptorProto {
+	mut res := FileDescriptorProto{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -148,34 +148,34 @@ pub fn protobuffiledescriptorproto_unpack(buf []byte) ?ProtobufFileDescriptorPro
 				i = ii
 			}
 			4 {
-				ii, v := unpack_protobufdescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_descriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.message_type << v
 				i = ii
 			}
 			5 {
-				ii, v := unpack_protobufenumdescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_enumdescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.enum_type << v
 				i = ii
 			}
 			6 {
-				ii, v := unpack_protobufservicedescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_servicedescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.service << v
 				i = ii
 			}
 			7 {
-				ii, v := unpack_protobuffielddescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_fielddescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.extension << v
 				i = ii
 			}
 			8 {
 				res.has_options = true
-				ii, v := unpack_protobuffileoptions(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_fileoptions(cur_buf, tag_wiretype.wire_type)
 				res.options = v
 				i = ii
 			}
 			9 {
 				res.has_source_code_info = true
-				ii, v := unpack_protobufsourcecodeinfo(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_sourcecodeinfo(cur_buf, tag_wiretype.wire_type)
 				res.source_code_info = v
 				i = ii
 			}
@@ -193,19 +193,19 @@ pub fn protobuffiledescriptorproto_unpack(buf []byte) ?ProtobufFileDescriptorPro
 	return res
 }
 
-pub fn pack_protobuffiledescriptorproto(o ProtobufFileDescriptorProto, num u32) []byte {
+pub fn pack_filedescriptorproto(o FileDescriptorProto, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobuffiledescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufFileDescriptorProto) {
+pub fn unpack_filedescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, FileDescriptorProto) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobuffiledescriptorproto_unpack(v) or {
+	unpacked := filedescriptorproto_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufDescriptorProtoExtensionRange {
+pub struct DescriptorProtoExtensionRange {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
@@ -215,11 +215,11 @@ pub mut:
 	has_end        bool
 }
 
-pub fn new_protobufdescriptorprotoextensionrange() ProtobufDescriptorProtoExtensionRange {
-	return ProtobufDescriptorProtoExtensionRange{}
+pub fn new_descriptorprotoextensionrange() DescriptorProtoExtensionRange {
+	return DescriptorProtoExtensionRange{}
 }
 
-pub fn (o &ProtobufDescriptorProtoExtensionRange) pack() []byte {
+pub fn (o &DescriptorProtoExtensionRange) pack() []byte {
 	mut res := []byte{}
 	if o.has_start {
 		res << vproto.pack_int32_field(o.start, 1)
@@ -230,8 +230,8 @@ pub fn (o &ProtobufDescriptorProtoExtensionRange) pack() []byte {
 	return res
 }
 
-pub fn protobufdescriptorprotoextensionrange_unpack(buf []byte) ?ProtobufDescriptorProtoExtensionRange {
-	mut res := ProtobufDescriptorProtoExtensionRange{}
+pub fn descriptorprotoextensionrange_unpack(buf []byte) ?DescriptorProtoExtensionRange {
+	mut res := DescriptorProtoExtensionRange{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -267,65 +267,65 @@ pub fn protobufdescriptorprotoextensionrange_unpack(buf []byte) ?ProtobufDescrip
 	return res
 }
 
-pub fn pack_protobufdescriptorprotoextensionrange(o ProtobufDescriptorProtoExtensionRange, num u32) []byte {
+pub fn pack_descriptorprotoextensionrange(o DescriptorProtoExtensionRange, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufdescriptorprotoextensionrange(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufDescriptorProtoExtensionRange) {
+pub fn unpack_descriptorprotoextensionrange(buf []byte, tag_wiretype vproto.WireType) (int, DescriptorProtoExtensionRange) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufdescriptorprotoextensionrange_unpack(v) or {
+	unpacked := descriptorprotoextensionrange_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufDescriptorProto {
+pub struct DescriptorProto {
 mut:
 	unknown_fields  []vproto.UnknownField
 pub mut:
 	name            string
 	has_name        bool
-	field           []ProtobufFieldDescriptorProto
-	extension       []ProtobufFieldDescriptorProto
-	nested_type     []ProtobufDescriptorProto
-	enum_type       []ProtobufEnumDescriptorProto
-	extension_range []ProtobufDescriptorProtoExtensionRange
-	options         ProtobufMessageOptions
+	field           []FieldDescriptorProto
+	extension       []FieldDescriptorProto
+	nested_type     []DescriptorProto
+	enum_type       []EnumDescriptorProto
+	extension_range []DescriptorProtoExtensionRange
+	options         MessageOptions
 	has_options     bool
 }
 
-pub fn new_protobufdescriptorproto() ProtobufDescriptorProto {
-	return ProtobufDescriptorProto{}
+pub fn new_descriptorproto() DescriptorProto {
+	return DescriptorProto{}
 }
 
-pub fn (o &ProtobufDescriptorProto) pack() []byte {
+pub fn (o &DescriptorProto) pack() []byte {
 	mut res := []byte{}
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
 	}
 	for _, x in o.field {
-		res << pack_protobuffielddescriptorproto(x, 2)
+		res << pack_fielddescriptorproto(x, 2)
 	}
 	for _, x in o.extension {
-		res << pack_protobuffielddescriptorproto(x, 6)
+		res << pack_fielddescriptorproto(x, 6)
 	}
 	for _, x in o.nested_type {
-		res << pack_protobufdescriptorproto(x, 3)
+		res << pack_descriptorproto(x, 3)
 	}
 	for _, x in o.enum_type {
-		res << pack_protobufenumdescriptorproto(x, 4)
+		res << pack_enumdescriptorproto(x, 4)
 	}
 	for _, x in o.extension_range {
-		res << pack_protobufdescriptorprotoextensionrange(x, 5)
+		res << pack_descriptorprotoextensionrange(x, 5)
 	}
 	if o.has_options {
-		res << pack_protobufmessageoptions(o.options, 7)
+		res << pack_messageoptions(o.options, 7)
 	}
 	return res
 }
 
-pub fn protobufdescriptorproto_unpack(buf []byte) ?ProtobufDescriptorProto {
-	mut res := ProtobufDescriptorProto{}
+pub fn descriptorproto_unpack(buf []byte) ?DescriptorProto {
+	mut res := DescriptorProto{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -342,33 +342,33 @@ pub fn protobufdescriptorproto_unpack(buf []byte) ?ProtobufDescriptorProto {
 				i = ii
 			}
 			2 {
-				ii, v := unpack_protobuffielddescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_fielddescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.field << v
 				i = ii
 			}
 			6 {
-				ii, v := unpack_protobuffielddescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_fielddescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.extension << v
 				i = ii
 			}
 			3 {
-				ii, v := unpack_protobufdescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_descriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.nested_type << v
 				i = ii
 			}
 			4 {
-				ii, v := unpack_protobufenumdescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_enumdescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.enum_type << v
 				i = ii
 			}
 			5 {
-				ii, v := unpack_protobufdescriptorprotoextensionrange(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_descriptorprotoextensionrange(cur_buf, tag_wiretype.wire_type)
 				res.extension_range << v
 				i = ii
 			}
 			7 {
 				res.has_options = true
-				ii, v := unpack_protobufmessageoptions(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_messageoptions(cur_buf, tag_wiretype.wire_type)
 				res.options = v
 				i = ii
 			}
@@ -386,19 +386,19 @@ pub fn protobufdescriptorproto_unpack(buf []byte) ?ProtobufDescriptorProto {
 	return res
 }
 
-pub fn pack_protobufdescriptorproto(o ProtobufDescriptorProto, num u32) []byte {
+pub fn pack_descriptorproto(o DescriptorProto, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufdescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufDescriptorProto) {
+pub fn unpack_descriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, DescriptorProto) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufdescriptorproto_unpack(v) or {
+	unpacked := descriptorproto_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-enum ProtobufFieldDescriptorProtoType {
+enum FieldDescriptorProtoType {
 	type_double = 1
 	type_float = 2
 	type_int64 = 3
@@ -419,31 +419,31 @@ enum ProtobufFieldDescriptorProtoType {
 	type_sint64 = 18
 }
 
-fn pack_protobuffielddescriptorprototype(e ProtobufFieldDescriptorProtoType, num u32) []byte {
+fn pack_fielddescriptorprototype(e FieldDescriptorProtoType, num u32) []byte {
 	return vproto.pack_int32_field(int(e), num)
 }
 
-fn unpack_protobuffielddescriptorprototype(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufFieldDescriptorProtoType) {
+fn unpack_fielddescriptorprototype(buf []byte, tag_wiretype vproto.WireType) (int, FieldDescriptorProtoType) {
 	i, v := vproto.unpack_int32_field(buf, tag_wiretype)
-	return i, ProtobufFieldDescriptorProtoType(v)
+	return i, FieldDescriptorProtoType(v)
 }
 
-enum ProtobufFieldDescriptorProtoLabel {
+enum FieldDescriptorProtoLabel {
 	label_optional = 1
 	label_required = 2
 	label_repeated = 3
 }
 
-fn pack_protobuffielddescriptorprotolabel(e ProtobufFieldDescriptorProtoLabel, num u32) []byte {
+fn pack_fielddescriptorprotolabel(e FieldDescriptorProtoLabel, num u32) []byte {
 	return vproto.pack_int32_field(int(e), num)
 }
 
-fn unpack_protobuffielddescriptorprotolabel(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufFieldDescriptorProtoLabel) {
+fn unpack_fielddescriptorprotolabel(buf []byte, tag_wiretype vproto.WireType) (int, FieldDescriptorProtoLabel) {
 	i, v := vproto.unpack_int32_field(buf, tag_wiretype)
-	return i, ProtobufFieldDescriptorProtoLabel(v)
+	return i, FieldDescriptorProtoLabel(v)
 }
 
-pub struct ProtobufFieldDescriptorProto {
+pub struct FieldDescriptorProto {
 mut:
 	unknown_fields    []vproto.UnknownField
 pub mut:
@@ -451,9 +451,9 @@ pub mut:
 	has_name          bool
 	number            int
 	has_number        bool
-	label             ProtobufFieldDescriptorProtoLabel
+	label             FieldDescriptorProtoLabel
 	has_label         bool
-	type_             ProtobufFieldDescriptorProtoType
+	type_             FieldDescriptorProtoType
 	has_type_         bool
 	type_name         string
 	has_type_name     bool
@@ -461,15 +461,15 @@ pub mut:
 	has_extendee      bool
 	default_value     string
 	has_default_value bool
-	options           ProtobufFieldOptions
+	options           FieldOptions
 	has_options       bool
 }
 
-pub fn new_protobuffielddescriptorproto() ProtobufFieldDescriptorProto {
-	return ProtobufFieldDescriptorProto{}
+pub fn new_fielddescriptorproto() FieldDescriptorProto {
+	return FieldDescriptorProto{}
 }
 
-pub fn (o &ProtobufFieldDescriptorProto) pack() []byte {
+pub fn (o &FieldDescriptorProto) pack() []byte {
 	mut res := []byte{}
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
@@ -478,10 +478,10 @@ pub fn (o &ProtobufFieldDescriptorProto) pack() []byte {
 		res << vproto.pack_int32_field(o.number, 3)
 	}
 	if o.has_label {
-		res << pack_protobuffielddescriptorprotolabel(o.label, 4)
+		res << pack_fielddescriptorprotolabel(o.label, 4)
 	}
 	if o.has_type_ {
-		res << pack_protobuffielddescriptorprototype(o.type_, 5)
+		res << pack_fielddescriptorprototype(o.type_, 5)
 	}
 	if o.has_type_name {
 		res << vproto.pack_string_field(o.type_name, 6)
@@ -493,13 +493,13 @@ pub fn (o &ProtobufFieldDescriptorProto) pack() []byte {
 		res << vproto.pack_string_field(o.default_value, 7)
 	}
 	if o.has_options {
-		res << pack_protobuffieldoptions(o.options, 8)
+		res << pack_fieldoptions(o.options, 8)
 	}
 	return res
 }
 
-pub fn protobuffielddescriptorproto_unpack(buf []byte) ?ProtobufFieldDescriptorProto {
-	mut res := ProtobufFieldDescriptorProto{}
+pub fn fielddescriptorproto_unpack(buf []byte) ?FieldDescriptorProto {
+	mut res := FieldDescriptorProto{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -523,13 +523,13 @@ pub fn protobuffielddescriptorproto_unpack(buf []byte) ?ProtobufFieldDescriptorP
 			}
 			4 {
 				res.has_label = true
-				ii, v := unpack_protobuffielddescriptorprotolabel(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_fielddescriptorprotolabel(cur_buf, tag_wiretype.wire_type)
 				res.label = v
 				i = ii
 			}
 			5 {
 				res.has_type_ = true
-				ii, v := unpack_protobuffielddescriptorprototype(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_fielddescriptorprototype(cur_buf, tag_wiretype.wire_type)
 				res.type_ = v
 				i = ii
 			}
@@ -553,7 +553,7 @@ pub fn protobuffielddescriptorproto_unpack(buf []byte) ?ProtobufFieldDescriptorP
 			}
 			8 {
 				res.has_options = true
-				ii, v := unpack_protobuffieldoptions(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_fieldoptions(cur_buf, tag_wiretype.wire_type)
 				res.options = v
 				i = ii
 			}
@@ -571,49 +571,49 @@ pub fn protobuffielddescriptorproto_unpack(buf []byte) ?ProtobufFieldDescriptorP
 	return res
 }
 
-pub fn pack_protobuffielddescriptorproto(o ProtobufFieldDescriptorProto, num u32) []byte {
+pub fn pack_fielddescriptorproto(o FieldDescriptorProto, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobuffielddescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufFieldDescriptorProto) {
+pub fn unpack_fielddescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, FieldDescriptorProto) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobuffielddescriptorproto_unpack(v) or {
+	unpacked := fielddescriptorproto_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufEnumDescriptorProto {
+pub struct EnumDescriptorProto {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
 	name           string
 	has_name       bool
-	value          []ProtobufEnumValueDescriptorProto
-	options        ProtobufEnumOptions
+	value          []EnumValueDescriptorProto
+	options        EnumOptions
 	has_options    bool
 }
 
-pub fn new_protobufenumdescriptorproto() ProtobufEnumDescriptorProto {
-	return ProtobufEnumDescriptorProto{}
+pub fn new_enumdescriptorproto() EnumDescriptorProto {
+	return EnumDescriptorProto{}
 }
 
-pub fn (o &ProtobufEnumDescriptorProto) pack() []byte {
+pub fn (o &EnumDescriptorProto) pack() []byte {
 	mut res := []byte{}
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
 	}
 	for _, x in o.value {
-		res << pack_protobufenumvaluedescriptorproto(x, 2)
+		res << pack_enumvaluedescriptorproto(x, 2)
 	}
 	if o.has_options {
-		res << pack_protobufenumoptions(o.options, 3)
+		res << pack_enumoptions(o.options, 3)
 	}
 	return res
 }
 
-pub fn protobufenumdescriptorproto_unpack(buf []byte) ?ProtobufEnumDescriptorProto {
-	mut res := ProtobufEnumDescriptorProto{}
+pub fn enumdescriptorproto_unpack(buf []byte) ?EnumDescriptorProto {
+	mut res := EnumDescriptorProto{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -630,13 +630,13 @@ pub fn protobufenumdescriptorproto_unpack(buf []byte) ?ProtobufEnumDescriptorPro
 				i = ii
 			}
 			2 {
-				ii, v := unpack_protobufenumvaluedescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_enumvaluedescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.value << v
 				i = ii
 			}
 			3 {
 				res.has_options = true
-				ii, v := unpack_protobufenumoptions(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_enumoptions(cur_buf, tag_wiretype.wire_type)
 				res.options = v
 				i = ii
 			}
@@ -654,19 +654,19 @@ pub fn protobufenumdescriptorproto_unpack(buf []byte) ?ProtobufEnumDescriptorPro
 	return res
 }
 
-pub fn pack_protobufenumdescriptorproto(o ProtobufEnumDescriptorProto, num u32) []byte {
+pub fn pack_enumdescriptorproto(o EnumDescriptorProto, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufenumdescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufEnumDescriptorProto) {
+pub fn unpack_enumdescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, EnumDescriptorProto) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufenumdescriptorproto_unpack(v) or {
+	unpacked := enumdescriptorproto_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufEnumValueDescriptorProto {
+pub struct EnumValueDescriptorProto {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
@@ -674,15 +674,15 @@ pub mut:
 	has_name       bool
 	number         int
 	has_number     bool
-	options        ProtobufEnumValueOptions
+	options        EnumValueOptions
 	has_options    bool
 }
 
-pub fn new_protobufenumvaluedescriptorproto() ProtobufEnumValueDescriptorProto {
-	return ProtobufEnumValueDescriptorProto{}
+pub fn new_enumvaluedescriptorproto() EnumValueDescriptorProto {
+	return EnumValueDescriptorProto{}
 }
 
-pub fn (o &ProtobufEnumValueDescriptorProto) pack() []byte {
+pub fn (o &EnumValueDescriptorProto) pack() []byte {
 	mut res := []byte{}
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
@@ -691,13 +691,13 @@ pub fn (o &ProtobufEnumValueDescriptorProto) pack() []byte {
 		res << vproto.pack_int32_field(o.number, 2)
 	}
 	if o.has_options {
-		res << pack_protobufenumvalueoptions(o.options, 3)
+		res << pack_enumvalueoptions(o.options, 3)
 	}
 	return res
 }
 
-pub fn protobufenumvaluedescriptorproto_unpack(buf []byte) ?ProtobufEnumValueDescriptorProto {
-	mut res := ProtobufEnumValueDescriptorProto{}
+pub fn enumvaluedescriptorproto_unpack(buf []byte) ?EnumValueDescriptorProto {
+	mut res := EnumValueDescriptorProto{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -721,7 +721,7 @@ pub fn protobufenumvaluedescriptorproto_unpack(buf []byte) ?ProtobufEnumValueDes
 			}
 			3 {
 				res.has_options = true
-				ii, v := unpack_protobufenumvalueoptions(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_enumvalueoptions(cur_buf, tag_wiretype.wire_type)
 				res.options = v
 				i = ii
 			}
@@ -739,49 +739,49 @@ pub fn protobufenumvaluedescriptorproto_unpack(buf []byte) ?ProtobufEnumValueDes
 	return res
 }
 
-pub fn pack_protobufenumvaluedescriptorproto(o ProtobufEnumValueDescriptorProto, num u32) []byte {
+pub fn pack_enumvaluedescriptorproto(o EnumValueDescriptorProto, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufenumvaluedescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufEnumValueDescriptorProto) {
+pub fn unpack_enumvaluedescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, EnumValueDescriptorProto) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufenumvaluedescriptorproto_unpack(v) or {
+	unpacked := enumvaluedescriptorproto_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufServiceDescriptorProto {
+pub struct ServiceDescriptorProto {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
 	name           string
 	has_name       bool
-	method         []ProtobufMethodDescriptorProto
-	options        ProtobufServiceOptions
+	method         []MethodDescriptorProto
+	options        ServiceOptions
 	has_options    bool
 }
 
-pub fn new_protobufservicedescriptorproto() ProtobufServiceDescriptorProto {
-	return ProtobufServiceDescriptorProto{}
+pub fn new_servicedescriptorproto() ServiceDescriptorProto {
+	return ServiceDescriptorProto{}
 }
 
-pub fn (o &ProtobufServiceDescriptorProto) pack() []byte {
+pub fn (o &ServiceDescriptorProto) pack() []byte {
 	mut res := []byte{}
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
 	}
 	for _, x in o.method {
-		res << pack_protobufmethoddescriptorproto(x, 2)
+		res << pack_methoddescriptorproto(x, 2)
 	}
 	if o.has_options {
-		res << pack_protobufserviceoptions(o.options, 3)
+		res << pack_serviceoptions(o.options, 3)
 	}
 	return res
 }
 
-pub fn protobufservicedescriptorproto_unpack(buf []byte) ?ProtobufServiceDescriptorProto {
-	mut res := ProtobufServiceDescriptorProto{}
+pub fn servicedescriptorproto_unpack(buf []byte) ?ServiceDescriptorProto {
+	mut res := ServiceDescriptorProto{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -798,13 +798,13 @@ pub fn protobufservicedescriptorproto_unpack(buf []byte) ?ProtobufServiceDescrip
 				i = ii
 			}
 			2 {
-				ii, v := unpack_protobufmethoddescriptorproto(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_methoddescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.method << v
 				i = ii
 			}
 			3 {
 				res.has_options = true
-				ii, v := unpack_protobufserviceoptions(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_serviceoptions(cur_buf, tag_wiretype.wire_type)
 				res.options = v
 				i = ii
 			}
@@ -822,19 +822,19 @@ pub fn protobufservicedescriptorproto_unpack(buf []byte) ?ProtobufServiceDescrip
 	return res
 }
 
-pub fn pack_protobufservicedescriptorproto(o ProtobufServiceDescriptorProto, num u32) []byte {
+pub fn pack_servicedescriptorproto(o ServiceDescriptorProto, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufservicedescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufServiceDescriptorProto) {
+pub fn unpack_servicedescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, ServiceDescriptorProto) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufservicedescriptorproto_unpack(v) or {
+	unpacked := servicedescriptorproto_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufMethodDescriptorProto {
+pub struct MethodDescriptorProto {
 mut:
 	unknown_fields  []vproto.UnknownField
 pub mut:
@@ -844,15 +844,15 @@ pub mut:
 	has_input_type  bool
 	output_type     string
 	has_output_type bool
-	options         ProtobufMethodOptions
+	options         MethodOptions
 	has_options     bool
 }
 
-pub fn new_protobufmethoddescriptorproto() ProtobufMethodDescriptorProto {
-	return ProtobufMethodDescriptorProto{}
+pub fn new_methoddescriptorproto() MethodDescriptorProto {
+	return MethodDescriptorProto{}
 }
 
-pub fn (o &ProtobufMethodDescriptorProto) pack() []byte {
+pub fn (o &MethodDescriptorProto) pack() []byte {
 	mut res := []byte{}
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
@@ -864,13 +864,13 @@ pub fn (o &ProtobufMethodDescriptorProto) pack() []byte {
 		res << vproto.pack_string_field(o.output_type, 3)
 	}
 	if o.has_options {
-		res << pack_protobufmethodoptions(o.options, 4)
+		res << pack_methodoptions(o.options, 4)
 	}
 	return res
 }
 
-pub fn protobufmethoddescriptorproto_unpack(buf []byte) ?ProtobufMethodDescriptorProto {
-	mut res := ProtobufMethodDescriptorProto{}
+pub fn methoddescriptorproto_unpack(buf []byte) ?MethodDescriptorProto {
+	mut res := MethodDescriptorProto{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -900,7 +900,7 @@ pub fn protobufmethoddescriptorproto_unpack(buf []byte) ?ProtobufMethodDescripto
 			}
 			4 {
 				res.has_options = true
-				ii, v := unpack_protobufmethodoptions(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_methodoptions(cur_buf, tag_wiretype.wire_type)
 				res.options = v
 				i = ii
 			}
@@ -918,34 +918,34 @@ pub fn protobufmethoddescriptorproto_unpack(buf []byte) ?ProtobufMethodDescripto
 	return res
 }
 
-pub fn pack_protobufmethoddescriptorproto(o ProtobufMethodDescriptorProto, num u32) []byte {
+pub fn pack_methoddescriptorproto(o MethodDescriptorProto, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufmethoddescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufMethodDescriptorProto) {
+pub fn unpack_methoddescriptorproto(buf []byte, tag_wiretype vproto.WireType) (int, MethodDescriptorProto) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufmethoddescriptorproto_unpack(v) or {
+	unpacked := methoddescriptorproto_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-enum ProtobufFileOptionsOptimizeMode {
+enum FileOptionsOptimizeMode {
 	speed = 1
 	code_size = 2
 	lite_runtime = 3
 }
 
-fn pack_protobuffileoptionsoptimizemode(e ProtobufFileOptionsOptimizeMode, num u32) []byte {
+fn pack_fileoptionsoptimizemode(e FileOptionsOptimizeMode, num u32) []byte {
 	return vproto.pack_int32_field(int(e), num)
 }
 
-fn unpack_protobuffileoptionsoptimizemode(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufFileOptionsOptimizeMode) {
+fn unpack_fileoptionsoptimizemode(buf []byte, tag_wiretype vproto.WireType) (int, FileOptionsOptimizeMode) {
 	i, v := vproto.unpack_int32_field(buf, tag_wiretype)
-	return i, ProtobufFileOptionsOptimizeMode(v)
+	return i, FileOptionsOptimizeMode(v)
 }
 
-pub struct ProtobufFileOptions {
+pub struct FileOptions {
 mut:
 	unknown_fields                    []vproto.UnknownField
 pub mut:
@@ -957,7 +957,7 @@ pub mut:
 	has_java_multiple_files           bool
 	java_generate_equals_and_hash     bool
 	has_java_generate_equals_and_hash bool
-	optimize_for                      ProtobufFileOptionsOptimizeMode
+	optimize_for                      FileOptionsOptimizeMode
 	has_optimize_for                  bool
 	cc_generic_services               bool
 	has_cc_generic_services           bool
@@ -965,14 +965,14 @@ pub mut:
 	has_java_generic_services         bool
 	py_generic_services               bool
 	has_py_generic_services           bool
-	uninterpreted_option              []ProtobufUninterpretedOption
+	uninterpreted_option              []UninterpretedOption
 }
 
-pub fn new_protobuffileoptions() ProtobufFileOptions {
-	return ProtobufFileOptions{}
+pub fn new_fileoptions() FileOptions {
+	return FileOptions{}
 }
 
-pub fn (o &ProtobufFileOptions) pack() []byte {
+pub fn (o &FileOptions) pack() []byte {
 	mut res := []byte{}
 	if o.has_java_package {
 		res << vproto.pack_string_field(o.java_package, 1)
@@ -987,7 +987,7 @@ pub fn (o &ProtobufFileOptions) pack() []byte {
 		res << vproto.pack_bool_field(o.java_generate_equals_and_hash, 20)
 	}
 	if o.has_optimize_for {
-		res << pack_protobuffileoptionsoptimizemode(o.optimize_for, 9)
+		res << pack_fileoptionsoptimizemode(o.optimize_for, 9)
 	}
 	if o.has_cc_generic_services {
 		res << vproto.pack_bool_field(o.cc_generic_services, 16)
@@ -999,13 +999,13 @@ pub fn (o &ProtobufFileOptions) pack() []byte {
 		res << vproto.pack_bool_field(o.py_generic_services, 18)
 	}
 	for _, x in o.uninterpreted_option {
-		res << pack_protobufuninterpretedoption(x, 999)
+		res << pack_uninterpretedoption(x, 999)
 	}
 	return res
 }
 
-pub fn protobuffileoptions_unpack(buf []byte) ?ProtobufFileOptions {
-	mut res := ProtobufFileOptions{}
+pub fn fileoptions_unpack(buf []byte) ?FileOptions {
+	mut res := FileOptions{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1041,7 +1041,7 @@ pub fn protobuffileoptions_unpack(buf []byte) ?ProtobufFileOptions {
 			}
 			9 {
 				res.has_optimize_for = true
-				ii, v := unpack_protobuffileoptionsoptimizemode(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_fileoptionsoptimizemode(cur_buf, tag_wiretype.wire_type)
 				res.optimize_for = v
 				i = ii
 			}
@@ -1064,7 +1064,7 @@ pub fn protobuffileoptions_unpack(buf []byte) ?ProtobufFileOptions {
 				i = ii
 			}
 			999 {
-				ii, v := unpack_protobufuninterpretedoption(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
 			}
@@ -1082,19 +1082,19 @@ pub fn protobuffileoptions_unpack(buf []byte) ?ProtobufFileOptions {
 	return res
 }
 
-pub fn pack_protobuffileoptions(o ProtobufFileOptions, num u32) []byte {
+pub fn pack_fileoptions(o FileOptions, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobuffileoptions(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufFileOptions) {
+pub fn unpack_fileoptions(buf []byte, tag_wiretype vproto.WireType) (int, FileOptions) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobuffileoptions_unpack(v) or {
+	unpacked := fileoptions_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufMessageOptions {
+pub struct MessageOptions {
 mut:
 	unknown_fields                      []vproto.UnknownField
 pub mut:
@@ -1102,14 +1102,14 @@ pub mut:
 	has_message_set_wire_format         bool
 	no_standard_descriptor_accessor     bool
 	has_no_standard_descriptor_accessor bool
-	uninterpreted_option                []ProtobufUninterpretedOption
+	uninterpreted_option                []UninterpretedOption
 }
 
-pub fn new_protobufmessageoptions() ProtobufMessageOptions {
-	return ProtobufMessageOptions{}
+pub fn new_messageoptions() MessageOptions {
+	return MessageOptions{}
 }
 
-pub fn (o &ProtobufMessageOptions) pack() []byte {
+pub fn (o &MessageOptions) pack() []byte {
 	mut res := []byte{}
 	if o.has_message_set_wire_format {
 		res << vproto.pack_bool_field(o.message_set_wire_format, 1)
@@ -1118,13 +1118,13 @@ pub fn (o &ProtobufMessageOptions) pack() []byte {
 		res << vproto.pack_bool_field(o.no_standard_descriptor_accessor, 2)
 	}
 	for _, x in o.uninterpreted_option {
-		res << pack_protobufuninterpretedoption(x, 999)
+		res << pack_uninterpretedoption(x, 999)
 	}
 	return res
 }
 
-pub fn protobufmessageoptions_unpack(buf []byte) ?ProtobufMessageOptions {
-	mut res := ProtobufMessageOptions{}
+pub fn messageoptions_unpack(buf []byte) ?MessageOptions {
+	mut res := MessageOptions{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1147,7 +1147,7 @@ pub fn protobufmessageoptions_unpack(buf []byte) ?ProtobufMessageOptions {
 				i = ii
 			}
 			999 {
-				ii, v := unpack_protobufuninterpretedoption(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
 			}
@@ -1165,38 +1165,38 @@ pub fn protobufmessageoptions_unpack(buf []byte) ?ProtobufMessageOptions {
 	return res
 }
 
-pub fn pack_protobufmessageoptions(o ProtobufMessageOptions, num u32) []byte {
+pub fn pack_messageoptions(o MessageOptions, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufmessageoptions(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufMessageOptions) {
+pub fn unpack_messageoptions(buf []byte, tag_wiretype vproto.WireType) (int, MessageOptions) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufmessageoptions_unpack(v) or {
+	unpacked := messageoptions_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-enum ProtobufFieldOptionsCType {
+enum FieldOptionsCType {
 	string = 0
 	cord = 1
 	string_piece = 2
 }
 
-fn pack_protobuffieldoptionsctype(e ProtobufFieldOptionsCType, num u32) []byte {
+fn pack_fieldoptionsctype(e FieldOptionsCType, num u32) []byte {
 	return vproto.pack_int32_field(int(e), num)
 }
 
-fn unpack_protobuffieldoptionsctype(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufFieldOptionsCType) {
+fn unpack_fieldoptionsctype(buf []byte, tag_wiretype vproto.WireType) (int, FieldOptionsCType) {
 	i, v := vproto.unpack_int32_field(buf, tag_wiretype)
-	return i, ProtobufFieldOptionsCType(v)
+	return i, FieldOptionsCType(v)
 }
 
-pub struct ProtobufFieldOptions {
+pub struct FieldOptions {
 mut:
 	unknown_fields           []vproto.UnknownField
 pub mut:
-	ctype                    ProtobufFieldOptionsCType
+	ctype                    FieldOptionsCType
 	has_ctype                bool
 	packed                   bool
 	has_packed               bool
@@ -1204,17 +1204,17 @@ pub mut:
 	has_deprecated           bool
 	experimental_map_key     string
 	has_experimental_map_key bool
-	uninterpreted_option     []ProtobufUninterpretedOption
+	uninterpreted_option     []UninterpretedOption
 }
 
-pub fn new_protobuffieldoptions() ProtobufFieldOptions {
-	return ProtobufFieldOptions{}
+pub fn new_fieldoptions() FieldOptions {
+	return FieldOptions{}
 }
 
-pub fn (o &ProtobufFieldOptions) pack() []byte {
+pub fn (o &FieldOptions) pack() []byte {
 	mut res := []byte{}
 	if o.has_ctype {
-		res << pack_protobuffieldoptionsctype(o.ctype, 1)
+		res << pack_fieldoptionsctype(o.ctype, 1)
 	}
 	if o.has_packed {
 		res << vproto.pack_bool_field(o.packed, 2)
@@ -1226,13 +1226,13 @@ pub fn (o &ProtobufFieldOptions) pack() []byte {
 		res << vproto.pack_string_field(o.experimental_map_key, 9)
 	}
 	for _, x in o.uninterpreted_option {
-		res << pack_protobufuninterpretedoption(x, 999)
+		res << pack_uninterpretedoption(x, 999)
 	}
 	return res
 }
 
-pub fn protobuffieldoptions_unpack(buf []byte) ?ProtobufFieldOptions {
-	mut res := ProtobufFieldOptions{}
+pub fn fieldoptions_unpack(buf []byte) ?FieldOptions {
+	mut res := FieldOptions{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1244,7 +1244,7 @@ pub fn protobuffieldoptions_unpack(buf []byte) ?ProtobufFieldOptions {
 		match tag_wiretype.tag {
 			1 {
 				res.has_ctype = true
-				ii, v := unpack_protobuffieldoptionsctype(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_fieldoptionsctype(cur_buf, tag_wiretype.wire_type)
 				res.ctype = v
 				i = ii
 			}
@@ -1267,7 +1267,7 @@ pub fn protobuffieldoptions_unpack(buf []byte) ?ProtobufFieldOptions {
 				i = ii
 			}
 			999 {
-				ii, v := unpack_protobufuninterpretedoption(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
 			}
@@ -1285,39 +1285,39 @@ pub fn protobuffieldoptions_unpack(buf []byte) ?ProtobufFieldOptions {
 	return res
 }
 
-pub fn pack_protobuffieldoptions(o ProtobufFieldOptions, num u32) []byte {
+pub fn pack_fieldoptions(o FieldOptions, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobuffieldoptions(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufFieldOptions) {
+pub fn unpack_fieldoptions(buf []byte, tag_wiretype vproto.WireType) (int, FieldOptions) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobuffieldoptions_unpack(v) or {
+	unpacked := fieldoptions_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufEnumOptions {
+pub struct EnumOptions {
 mut:
 	unknown_fields       []vproto.UnknownField
 pub mut:
-	uninterpreted_option []ProtobufUninterpretedOption
+	uninterpreted_option []UninterpretedOption
 }
 
-pub fn new_protobufenumoptions() ProtobufEnumOptions {
-	return ProtobufEnumOptions{}
+pub fn new_enumoptions() EnumOptions {
+	return EnumOptions{}
 }
 
-pub fn (o &ProtobufEnumOptions) pack() []byte {
+pub fn (o &EnumOptions) pack() []byte {
 	mut res := []byte{}
 	for _, x in o.uninterpreted_option {
-		res << pack_protobufuninterpretedoption(x, 999)
+		res << pack_uninterpretedoption(x, 999)
 	}
 	return res
 }
 
-pub fn protobufenumoptions_unpack(buf []byte) ?ProtobufEnumOptions {
-	mut res := ProtobufEnumOptions{}
+pub fn enumoptions_unpack(buf []byte) ?EnumOptions {
+	mut res := EnumOptions{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1328,7 +1328,7 @@ pub fn protobufenumoptions_unpack(buf []byte) ?ProtobufEnumOptions {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			999 {
-				ii, v := unpack_protobufuninterpretedoption(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
 			}
@@ -1346,39 +1346,39 @@ pub fn protobufenumoptions_unpack(buf []byte) ?ProtobufEnumOptions {
 	return res
 }
 
-pub fn pack_protobufenumoptions(o ProtobufEnumOptions, num u32) []byte {
+pub fn pack_enumoptions(o EnumOptions, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufenumoptions(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufEnumOptions) {
+pub fn unpack_enumoptions(buf []byte, tag_wiretype vproto.WireType) (int, EnumOptions) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufenumoptions_unpack(v) or {
+	unpacked := enumoptions_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufEnumValueOptions {
+pub struct EnumValueOptions {
 mut:
 	unknown_fields       []vproto.UnknownField
 pub mut:
-	uninterpreted_option []ProtobufUninterpretedOption
+	uninterpreted_option []UninterpretedOption
 }
 
-pub fn new_protobufenumvalueoptions() ProtobufEnumValueOptions {
-	return ProtobufEnumValueOptions{}
+pub fn new_enumvalueoptions() EnumValueOptions {
+	return EnumValueOptions{}
 }
 
-pub fn (o &ProtobufEnumValueOptions) pack() []byte {
+pub fn (o &EnumValueOptions) pack() []byte {
 	mut res := []byte{}
 	for _, x in o.uninterpreted_option {
-		res << pack_protobufuninterpretedoption(x, 999)
+		res << pack_uninterpretedoption(x, 999)
 	}
 	return res
 }
 
-pub fn protobufenumvalueoptions_unpack(buf []byte) ?ProtobufEnumValueOptions {
-	mut res := ProtobufEnumValueOptions{}
+pub fn enumvalueoptions_unpack(buf []byte) ?EnumValueOptions {
+	mut res := EnumValueOptions{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1389,7 +1389,7 @@ pub fn protobufenumvalueoptions_unpack(buf []byte) ?ProtobufEnumValueOptions {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			999 {
-				ii, v := unpack_protobufuninterpretedoption(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
 			}
@@ -1407,39 +1407,39 @@ pub fn protobufenumvalueoptions_unpack(buf []byte) ?ProtobufEnumValueOptions {
 	return res
 }
 
-pub fn pack_protobufenumvalueoptions(o ProtobufEnumValueOptions, num u32) []byte {
+pub fn pack_enumvalueoptions(o EnumValueOptions, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufenumvalueoptions(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufEnumValueOptions) {
+pub fn unpack_enumvalueoptions(buf []byte, tag_wiretype vproto.WireType) (int, EnumValueOptions) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufenumvalueoptions_unpack(v) or {
+	unpacked := enumvalueoptions_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufServiceOptions {
+pub struct ServiceOptions {
 mut:
 	unknown_fields       []vproto.UnknownField
 pub mut:
-	uninterpreted_option []ProtobufUninterpretedOption
+	uninterpreted_option []UninterpretedOption
 }
 
-pub fn new_protobufserviceoptions() ProtobufServiceOptions {
-	return ProtobufServiceOptions{}
+pub fn new_serviceoptions() ServiceOptions {
+	return ServiceOptions{}
 }
 
-pub fn (o &ProtobufServiceOptions) pack() []byte {
+pub fn (o &ServiceOptions) pack() []byte {
 	mut res := []byte{}
 	for _, x in o.uninterpreted_option {
-		res << pack_protobufuninterpretedoption(x, 999)
+		res << pack_uninterpretedoption(x, 999)
 	}
 	return res
 }
 
-pub fn protobufserviceoptions_unpack(buf []byte) ?ProtobufServiceOptions {
-	mut res := ProtobufServiceOptions{}
+pub fn serviceoptions_unpack(buf []byte) ?ServiceOptions {
+	mut res := ServiceOptions{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1450,7 +1450,7 @@ pub fn protobufserviceoptions_unpack(buf []byte) ?ProtobufServiceOptions {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			999 {
-				ii, v := unpack_protobufuninterpretedoption(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
 			}
@@ -1468,39 +1468,39 @@ pub fn protobufserviceoptions_unpack(buf []byte) ?ProtobufServiceOptions {
 	return res
 }
 
-pub fn pack_protobufserviceoptions(o ProtobufServiceOptions, num u32) []byte {
+pub fn pack_serviceoptions(o ServiceOptions, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufserviceoptions(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufServiceOptions) {
+pub fn unpack_serviceoptions(buf []byte, tag_wiretype vproto.WireType) (int, ServiceOptions) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufserviceoptions_unpack(v) or {
+	unpacked := serviceoptions_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufMethodOptions {
+pub struct MethodOptions {
 mut:
 	unknown_fields       []vproto.UnknownField
 pub mut:
-	uninterpreted_option []ProtobufUninterpretedOption
+	uninterpreted_option []UninterpretedOption
 }
 
-pub fn new_protobufmethodoptions() ProtobufMethodOptions {
-	return ProtobufMethodOptions{}
+pub fn new_methodoptions() MethodOptions {
+	return MethodOptions{}
 }
 
-pub fn (o &ProtobufMethodOptions) pack() []byte {
+pub fn (o &MethodOptions) pack() []byte {
 	mut res := []byte{}
 	for _, x in o.uninterpreted_option {
-		res << pack_protobufuninterpretedoption(x, 999)
+		res << pack_uninterpretedoption(x, 999)
 	}
 	return res
 }
 
-pub fn protobufmethodoptions_unpack(buf []byte) ?ProtobufMethodOptions {
-	mut res := ProtobufMethodOptions{}
+pub fn methodoptions_unpack(buf []byte) ?MethodOptions {
+	mut res := MethodOptions{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1511,7 +1511,7 @@ pub fn protobufmethodoptions_unpack(buf []byte) ?ProtobufMethodOptions {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			999 {
-				ii, v := unpack_protobufuninterpretedoption(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
 			}
@@ -1529,19 +1529,19 @@ pub fn protobufmethodoptions_unpack(buf []byte) ?ProtobufMethodOptions {
 	return res
 }
 
-pub fn pack_protobufmethodoptions(o ProtobufMethodOptions, num u32) []byte {
+pub fn pack_methodoptions(o MethodOptions, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufmethodoptions(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufMethodOptions) {
+pub fn unpack_methodoptions(buf []byte, tag_wiretype vproto.WireType) (int, MethodOptions) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufmethodoptions_unpack(v) or {
+	unpacked := methodoptions_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufUninterpretedOptionNamePart {
+pub struct UninterpretedOptionNamePart {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
@@ -1549,19 +1549,19 @@ pub mut:
 	is_extension   bool
 }
 
-pub fn new_protobufuninterpretedoptionnamepart() ProtobufUninterpretedOptionNamePart {
-	return ProtobufUninterpretedOptionNamePart{}
+pub fn new_uninterpretedoptionnamepart() UninterpretedOptionNamePart {
+	return UninterpretedOptionNamePart{}
 }
 
-pub fn (o &ProtobufUninterpretedOptionNamePart) pack() []byte {
+pub fn (o &UninterpretedOptionNamePart) pack() []byte {
 	mut res := []byte{}
 	res << vproto.pack_string_field(o.name_part, 1)
 	res << vproto.pack_bool_field(o.is_extension, 2)
 	return res
 }
 
-pub fn protobufuninterpretedoptionnamepart_unpack(buf []byte) ?ProtobufUninterpretedOptionNamePart {
-	mut res := ProtobufUninterpretedOptionNamePart{}
+pub fn uninterpretedoptionnamepart_unpack(buf []byte) ?UninterpretedOptionNamePart {
+	mut res := UninterpretedOptionNamePart{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1595,23 +1595,23 @@ pub fn protobufuninterpretedoptionnamepart_unpack(buf []byte) ?ProtobufUninterpr
 	return res
 }
 
-pub fn pack_protobufuninterpretedoptionnamepart(o ProtobufUninterpretedOptionNamePart, num u32) []byte {
+pub fn pack_uninterpretedoptionnamepart(o UninterpretedOptionNamePart, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufuninterpretedoptionnamepart(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufUninterpretedOptionNamePart) {
+pub fn unpack_uninterpretedoptionnamepart(buf []byte, tag_wiretype vproto.WireType) (int, UninterpretedOptionNamePart) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufuninterpretedoptionnamepart_unpack(v) or {
+	unpacked := uninterpretedoptionnamepart_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufUninterpretedOption {
+pub struct UninterpretedOption {
 mut:
 	unknown_fields         []vproto.UnknownField
 pub mut:
-	name                   []ProtobufUninterpretedOptionNamePart
+	name                   []UninterpretedOptionNamePart
 	identifier_value       string
 	has_identifier_value   bool
 	positive_int_value     u64
@@ -1626,14 +1626,14 @@ pub mut:
 	has_aggregate_value    bool
 }
 
-pub fn new_protobufuninterpretedoption() ProtobufUninterpretedOption {
-	return ProtobufUninterpretedOption{}
+pub fn new_uninterpretedoption() UninterpretedOption {
+	return UninterpretedOption{}
 }
 
-pub fn (o &ProtobufUninterpretedOption) pack() []byte {
+pub fn (o &UninterpretedOption) pack() []byte {
 	mut res := []byte{}
 	for _, x in o.name {
-		res << pack_protobufuninterpretedoptionnamepart(x, 2)
+		res << pack_uninterpretedoptionnamepart(x, 2)
 	}
 	if o.has_identifier_value {
 		res << vproto.pack_string_field(o.identifier_value, 3)
@@ -1656,8 +1656,8 @@ pub fn (o &ProtobufUninterpretedOption) pack() []byte {
 	return res
 }
 
-pub fn protobufuninterpretedoption_unpack(buf []byte) ?ProtobufUninterpretedOption {
-	mut res := ProtobufUninterpretedOption{}
+pub fn uninterpretedoption_unpack(buf []byte) ?UninterpretedOption {
+	mut res := UninterpretedOption{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1668,7 +1668,7 @@ pub fn protobufuninterpretedoption_unpack(buf []byte) ?ProtobufUninterpretedOpti
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			2 {
-				ii, v := unpack_protobufuninterpretedoptionnamepart(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_uninterpretedoptionnamepart(cur_buf, tag_wiretype.wire_type)
 				res.name << v
 				i = ii
 			}
@@ -1722,19 +1722,19 @@ pub fn protobufuninterpretedoption_unpack(buf []byte) ?ProtobufUninterpretedOpti
 	return res
 }
 
-pub fn pack_protobufuninterpretedoption(o ProtobufUninterpretedOption, num u32) []byte {
+pub fn pack_uninterpretedoption(o UninterpretedOption, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufuninterpretedoption(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufUninterpretedOption) {
+pub fn unpack_uninterpretedoption(buf []byte, tag_wiretype vproto.WireType) (int, UninterpretedOption) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufuninterpretedoption_unpack(v) or {
+	unpacked := uninterpretedoption_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufSourceCodeInfoLocation {
+pub struct SourceCodeInfoLocation {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
@@ -1742,11 +1742,11 @@ pub mut:
 	span           []int
 }
 
-pub fn new_protobufsourcecodeinfolocation() ProtobufSourceCodeInfoLocation {
-	return ProtobufSourceCodeInfoLocation{}
+pub fn new_sourcecodeinfolocation() SourceCodeInfoLocation {
+	return SourceCodeInfoLocation{}
 }
 
-pub fn (o &ProtobufSourceCodeInfoLocation) pack() []byte {
+pub fn (o &SourceCodeInfoLocation) pack() []byte {
 	mut res := []byte{}
 	for _, x in o.path {
 		res << vproto.pack_int32_field(x, 1)
@@ -1757,8 +1757,8 @@ pub fn (o &ProtobufSourceCodeInfoLocation) pack() []byte {
 	return res
 }
 
-pub fn protobufsourcecodeinfolocation_unpack(buf []byte) ?ProtobufSourceCodeInfoLocation {
-	mut res := ProtobufSourceCodeInfoLocation{}
+pub fn sourcecodeinfolocation_unpack(buf []byte) ?SourceCodeInfoLocation {
+	mut res := SourceCodeInfoLocation{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1792,39 +1792,39 @@ pub fn protobufsourcecodeinfolocation_unpack(buf []byte) ?ProtobufSourceCodeInfo
 	return res
 }
 
-pub fn pack_protobufsourcecodeinfolocation(o ProtobufSourceCodeInfoLocation, num u32) []byte {
+pub fn pack_sourcecodeinfolocation(o SourceCodeInfoLocation, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufsourcecodeinfolocation(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufSourceCodeInfoLocation) {
+pub fn unpack_sourcecodeinfolocation(buf []byte, tag_wiretype vproto.WireType) (int, SourceCodeInfoLocation) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufsourcecodeinfolocation_unpack(v) or {
+	unpacked := sourcecodeinfolocation_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked
 }
 
-pub struct ProtobufSourceCodeInfo {
+pub struct SourceCodeInfo {
 mut:
 	unknown_fields []vproto.UnknownField
 pub mut:
-	location       []ProtobufSourceCodeInfoLocation
+	location       []SourceCodeInfoLocation
 }
 
-pub fn new_protobufsourcecodeinfo() ProtobufSourceCodeInfo {
-	return ProtobufSourceCodeInfo{}
+pub fn new_sourcecodeinfo() SourceCodeInfo {
+	return SourceCodeInfo{}
 }
 
-pub fn (o &ProtobufSourceCodeInfo) pack() []byte {
+pub fn (o &SourceCodeInfo) pack() []byte {
 	mut res := []byte{}
 	for _, x in o.location {
-		res << pack_protobufsourcecodeinfolocation(x, 1)
+		res << pack_sourcecodeinfolocation(x, 1)
 	}
 	return res
 }
 
-pub fn protobufsourcecodeinfo_unpack(buf []byte) ?ProtobufSourceCodeInfo {
-	mut res := ProtobufSourceCodeInfo{}
+pub fn sourcecodeinfo_unpack(buf []byte) ?SourceCodeInfo {
+	mut res := SourceCodeInfo{}
 	mut total := 0
 	for total < buf.len {
 		mut i := 0
@@ -1835,7 +1835,7 @@ pub fn protobufsourcecodeinfo_unpack(buf []byte) ?ProtobufSourceCodeInfo {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			1 {
-				ii, v := unpack_protobufsourcecodeinfolocation(cur_buf, tag_wiretype.wire_type)
+				ii, v := unpack_sourcecodeinfolocation(cur_buf, tag_wiretype.wire_type)
 				res.location << v
 				i = ii
 			}
@@ -1853,13 +1853,13 @@ pub fn protobufsourcecodeinfo_unpack(buf []byte) ?ProtobufSourceCodeInfo {
 	return res
 }
 
-pub fn pack_protobufsourcecodeinfo(o ProtobufSourceCodeInfo, num u32) []byte {
+pub fn pack_sourcecodeinfo(o SourceCodeInfo, num u32) []byte {
 	return vproto.pack_message_field(o.pack(), num)
 }
 
-pub fn unpack_protobufsourcecodeinfo(buf []byte, tag_wiretype vproto.WireType) (int, ProtobufSourceCodeInfo) {
+pub fn unpack_sourcecodeinfo(buf []byte, tag_wiretype vproto.WireType) (int, SourceCodeInfo) {
 	i, v := vproto.unpack_message_field(buf, tag_wiretype)
-	unpacked := protobufsourcecodeinfo_unpack(v) or {
+	unpacked := sourcecodeinfo_unpack(v) or {
 		panic('')
 	}
 	return i, unpacked

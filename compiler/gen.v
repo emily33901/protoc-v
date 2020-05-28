@@ -1,7 +1,5 @@
 module compiler
 
-import os
-
 // TODO this file needs a massive refactor and clean
 // So much code just everywhere with functions that dont
 // make any sense
