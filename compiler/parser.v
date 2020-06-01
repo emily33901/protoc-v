@@ -1600,8 +1600,6 @@ fn (p &Parser) check_message_field_types(type_context []string, message &Message
 			continue
 		}
 
-		
-
 		p.report_invalid('Unable to find type `$field.t` for `$field.name` in `$message.name` ($message_type_context)')
 	}
 

@@ -23,10 +23,3 @@ Options:
   -q, --quiet               Supress warnings and messages
 
 ```
-
-## Other notes
-Because imported files are parsed after the file that they are imported from you may (almost certainly)
-end up with silly `unable to find type` errors which whilst are true at the time of parsing may not be
-at the time of generating V code becuase the compiler is straight up lying to you. 
-
-This will be fixed in a later update.
