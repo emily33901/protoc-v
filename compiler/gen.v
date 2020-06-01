@@ -177,7 +177,12 @@ fn (g &Gen) type_pack_name(pack_or_unpack string, field_proto_type string, field
 	}
 }
 
-fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_type string, field_TypeType TypeType, name, number string, is_packed bool) (string, string) {
+fn (g &Gen) gen_field_pack_text(
+	label, field_proto_type, field_v_type string, 
+	field_TypeType TypeType, 
+	name, number string, 
+	is_packed bool
+) (string, string) {
 	mut pack_text := ''
 	mut unpack_text := ''
 
@@ -239,7 +244,6 @@ fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_t
 				unpack_text += 'i = ii\n'
 				unpack_text += '}\n'
 			}
-
 		}
 
 		else {
@@ -247,6 +251,94 @@ fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_t
 			println('Unknown label $label')
 		}
 	}
+
+	return pack_text, unpack_text
+}
+
+fn key_default_value(v_type string) string {
+	match v_type {
+		'string' {
+			return '\'\''
+		}
+
+		'[]byte' {
+			// Keys cant be this type but value_default_value uses this for
+			// its .other case
+			return '[]byte{}'
+		}
+
+		else {
+			return '${v_type}(0)'
+		}
+	}
+}
+
+fn value_default_value(v_type string, type_type TypeType) string {
+	match type_type {
+		.other {
+			return key_default_value(v_type)
+		}
+
+		else {
+			return 'new_${v_type}()'
+		}
+	}
+}
+
+fn (g &Gen) gen_map_field_pack_text(
+	key_proto_type, key_v_type, value_proto_type, value_v_type string,
+	value_type_type TypeType, 
+	name, number string
+) (string, string){
+	// TODO this isnt ideal
+
+	value_v_type_no_mod := value_v_type.all_after_last('.')
+	value_v_type_mod := if value_v_type.contains('.') { value_v_type.all_before_last('.') + '.' } else { '' }
+
+	value_pack_inside := g.type_pack_name('${value_v_type_mod}pack', value_proto_type, value_v_type_no_mod, value_type_type)
+	value_unpack_inside := g.type_pack_name('${value_v_type_mod}unpack', value_proto_type, value_v_type_no_mod, value_type_type)
+
+	key_pack_inside := g.type_pack_name('pack', key_proto_type, key_v_type, .other)
+	key_unpack_inside := g.type_pack_name('unpack', key_proto_type, key_v_type, .other)
+
+
+	mut pack_text := ''
+	mut unpack_text := ''
+	// Essentially the same as a repeated field of a message
+	// where the message first contains the key
+	// and then the value
+	pack_text += 'for k, v in o.$name {\n'
+	pack_text += 'mut bytes := ${key_pack_inside}(k, 1)'
+	pack_text += 'bytes << ${value_pack_inside}(v, 2)'
+	pack_text += 'res << vproto.pack_bytes_field(bytes, $number)'
+	pack_text += '}\n'
+
+	unpack_text += '$number {\n'
+	unpack_text += 'ii, bytes := vproto.unpack_message_field(cur_buf, tag_wiretype.wire_type)\n'
+	unpack_text += 'mut k := ${key_default_value(key_v_type)}\n'
+	unpack_text += 'mut v := ${value_default_value(value_v_type, value_type_type)}\n'
+	unpack_text += 'mut bytes_offset := 0\n'
+	unpack_text += 'for j := 0; j < 2; j++ {\n'
+	unpack_text += 'map_tag_wiretype := vproto.unpack_tag_wire_type(bytes[bytes_offset..]) or { return error(\'malformed protobuf (couldnt parse tag & wire type)\') }\n'
+	unpack_text += 'match map_tag_wiretype.tag {\n'
+	unpack_text += '1 {\n'
+	unpack_text += 'map_ii, kk := ${key_unpack_inside}(bytes[bytes_offset..],  map_tag_wiretype.wire_type)\n'
+	unpack_text += 'bytes_offset += map_ii\n'
+	unpack_text += 'k = kk\n'
+	unpack_text += '}\n'
+	unpack_text += '2 {\n'
+	unpack_text += 'map_ii, vv := ${value_unpack_inside}(bytes[bytes_offset..], map_tag_wiretype.wire_type) \n'
+	unpack_text += 'bytes_offset += map_ii\n'
+	unpack_text += 'v = vv\n'
+	unpack_text += '}\n'
+	unpack_text += 'else { \n'
+	unpack_text += 'return error(\'malformed map field (didnt unpack a key/value)\')\n'
+	unpack_text += '}\n'
+	unpack_text += '}\n'
+	unpack_text += '}\n'
+	unpack_text += 'res.$name[k] = v\n'
+	unpack_text += 'i = ii\n'
+	unpack_text += '}\n'
 
 	return pack_text, unpack_text
 }
@@ -267,7 +359,9 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 		g.gen_enum_definition(m_names.this_type_context, sub)
 	}
 
-	pack_unpack_mut := if m.fields.len > 0 {
+	has_fields := 0 < m.fields.len + m.map_fields.len
+
+	pack_unpack_mut := if has_fields {
 		'mut '
 	} else {
 		''
@@ -282,7 +376,7 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 	field_unpack_text.l('pub fn ${m_full_name}_unpack(buf []byte) ?$m_name {')
 	field_unpack_text.l('${pack_unpack_mut}res := $m_name{}')
 
-	if m.fields.len > 0 {
+	if has_fields {
 		field_unpack_text.l('mut total := 0')
 		field_unpack_text.l('for total < buf.len {')
 		field_unpack_text.l('mut i := 0')
@@ -297,11 +391,12 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 	g.w.l('mut:')
 	g.w.l('unknown_fields []vproto.UnknownField')
 
-	if m.fields.len > 0 {
+
+	if has_fields {
 		g.w.l('pub mut:')
 	}
 
-	for _, field in m.fields {
+	for field in m.fields {
 		// simple_context := simplify_type_context(field.type_context, type_context)
 		// println('$type_context - $field.type_context = $simple_context')
 		field_type, field_type_type := g.type_to_typename(field.type_context, field.t)
@@ -317,9 +412,6 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 		} else if field.label == 'repeated' {
 			g.w.l('${name} []${field_type}')
 		}
-
-		// Seperate fields nicer
-		g.w.l('')
 
 		mut is_packed := false
 		if field.label == 'repeated' {
@@ -346,6 +438,29 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 		field_unpack_text.l(unpack_text)
 	}
 
+	for map_field in m.map_fields {
+		key_type, _ := g.type_to_typename(map_field.type_context, map_field.key_type)
+		value_type, value_type_type := g.type_to_typename(map_field.type_context, map_field.value_type)
+
+		name := escape_name(map_field.name)
+
+		g.w.l('${name} map[$key_type]$value_type')
+
+		mut pack_text := ''
+		mut unpack_text := ''
+
+		if value_type_type == .enum_ || value_type_type == .message {
+			names := g.message_names(map_field.type_context, map_field.value_type)
+
+			pack_text, unpack_text = g.gen_map_field_pack_text(map_field.key_type, key_type, map_field.value_type, names.lowercase_name, value_type_type, name, map_field.number)
+		} else {
+			pack_text, unpack_text = g.gen_map_field_pack_text(map_field.key_type, key_type, map_field.value_type, value_type, value_type_type, name, map_field.number)
+		}
+
+		field_pack_text.l(pack_text)
+		field_unpack_text.l(unpack_text)
+	}
+
 	// TODO oneofs maps extensions and similar
 
 	g.w.l('}')
@@ -353,7 +468,7 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 	field_pack_text.l('return res')
 	field_pack_text.l('}')
 
-	if m.fields.len > 0 {
+	if has_fields {
 		// close match then for then func
 		field_unpack_text.l('else {')
 		field_unpack_text.l('ii, v := vproto.unpack_unknown_field(cur_buf, tag_wiretype.wire_type)')

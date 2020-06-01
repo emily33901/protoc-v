@@ -107,6 +107,8 @@ pub struct MapField {
 	name       string
 	key_type   string
 	value_type string
+	// recreate it in gen
+	type_context []string
 	number     string // int literal
 }
 

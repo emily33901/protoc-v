@@ -1117,7 +1117,9 @@ fn (mut p Parser) consume_map_field() ?&MapField {
 
 	if p.consume_char() != `;` { p.report_error('Expected `;` in map field') }
 
-	return &MapField{ident, key_type, value_type, number}
+	// TODO options?
+
+	return &MapField{ident, key_type, value_type, p.type_scope(), number}
 }
 
 fn (mut p Parser) consume_reserved() ?&Reserved {

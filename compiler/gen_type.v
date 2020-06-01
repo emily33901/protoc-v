@@ -54,9 +54,8 @@ fn escape_name(name string) string {
 		return name + '_'
 	}
 
-	new_name := name.replace_each(['__', '_'])
-
-	return new_name
+	mut new_name := name.replace_each(['__', '_'])
+	return new_name.to_lower()
 }
 
 // TODO this is still misleading
