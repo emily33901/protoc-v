@@ -59,8 +59,11 @@ fn escape_name(name string) string {
 	return new_name
 }
 
-// TODO come up with a better name for this
-fn type_to_type(current_package string, type_table &TypeTable, context []string, t string) (string, TypeType) {
+// TODO this is still misleading
+// really this should be something about resolving a type
+// and then simplifiying it down which is what this function
+// actually does.
+fn type_to_typename(current_package string, type_table &TypeTable, context []string, t string) (string, TypeType) {
 	if t in valid_types {
 		return valid_types_v[valid_types.index(t)], TypeType.other
 	}
@@ -70,8 +73,6 @@ fn type_to_type(current_package string, type_table &TypeTable, context []string,
 
 		pkg_prefix := if typ.package == current_package { '' } else { typ.package.all_after_last('.') + '.' }
 		
-		println('$typ.context_no_pkg $pkg_prefix')
-
 		type_type := if typ.is_enum { TypeType.enum_ } else { TypeType.message }
 
 		fname := typ.name
@@ -109,7 +110,7 @@ fn message_names(current_package string, tt &TypeTable, type_context []string, n
 	mut this_type_context := type_context.clone()
 	this_type_context << name
 
-	real_type, _ := type_to_type(current_package, tt, type_context, name)
+	real_type, _ := type_to_typename(current_package, tt, type_context, name)
 
 	return MessageNames {
 		struct_name: real_type,

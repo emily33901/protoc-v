@@ -87,13 +87,13 @@ fn (mut g Gen) gen_enum_definition(type_context []string, e &Enum) {
 }
 
 // TODO When type_to_type changes name change this name too ! 
-fn (mut g Gen) type_to_type(context []string, t string) (string, TypeType) {
+fn (mut g Gen) type_to_typename(context []string, t string) (string, TypeType) {
 
 	// mut full_context := []string{}
 	// full_context << g.current_package.split('.')
 	// full_context << context
 
-	return type_to_type(g.current_package, g.type_table, context, t)
+	return type_to_typename(g.current_package, g.type_table, context, t)
 }
 
 fn (g Gen) message_names(context []string, t string) MessageNames {
@@ -177,7 +177,7 @@ fn (g &Gen) type_pack_name(pack_or_unpack string, field_proto_type string, field
 	}
 }
 
-fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_type string, field_TypeType TypeType, name, number string) (string, string) {
+fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_type string, field_TypeType TypeType, name, number string, is_packed bool) (string, string) {
 	mut pack_text := ''
 	mut unpack_text := ''
 
@@ -216,16 +216,30 @@ fn (g &Gen) gen_field_pack_text(label string, field_proto_type string, field_v_t
 		}
  
 		'repeated' {
-			// TODO we need to handle the repeated-packed case here aswell!
-			pack_text += 'for _, x in o.$name {\n'
-			pack_text += 'res << ${pack_inside}(x, $number)\n'
-			pack_text += '}\n'
+			if !is_packed {
+				pack_text += '// [packed=false]\n'
+				pack_text += 'for _, x in o.$name {\n'
+				pack_text += 'res << ${pack_inside}(x, $number)\n'
+				pack_text += '}\n'
 
-			unpack_text += '$number {\n'
-			unpack_text += 'ii, v := ${unpack_inside}(cur_buf, tag_wiretype.wire_type)\n'
-			unpack_text += 'res.$name << v\n'
-			unpack_text += 'i = ii\n'
-			unpack_text += '}\n'
+				unpack_text += '$number {\n'
+				unpack_text += '// [packed=false]\n'
+				unpack_text += 'ii, v := ${unpack_inside}(cur_buf, tag_wiretype.wire_type)\n'
+				unpack_text += 'res.$name << v\n'
+				unpack_text += 'i = ii\n'
+				unpack_text += '}\n'
+			} else {
+				pack_text += '// [packed=true]\n'
+				pack_text += 'res << ${pack_inside}_packed(o.$name, $number)\n'
+				
+				unpack_text += '$number {\n'
+				unpack_text += '// [packed=true]\n'
+				unpack_text += 'ii, v := ${unpack_inside}_packed(cur_buf, tag_wiretype.wire_type)\n'
+				unpack_text += 'res.$name << v\n'
+				unpack_text += 'i = ii\n'
+				unpack_text += '}\n'
+			}
+
 		}
 
 		else {
@@ -290,7 +304,7 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 	for _, field in m.fields {
 		// simple_context := simplify_type_context(field.type_context, type_context)
 		// println('$type_context - $field.type_context = $simple_context')
-		field_type, field_type_type := g.type_to_type(field.type_context, field.t)
+		field_type, field_type_type := g.type_to_typename(field.type_context, field.t)
 
 		name := escape_name(field.name)
 
@@ -307,6 +321,15 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 		// Seperate fields nicer
 		g.w.l('')
 
+		mut is_packed := false
+		if field.label == 'repeated' {
+			for o in field.options {
+				if o.ident == 'packed' {
+					is_packed = o.value.value == 'true'
+				}
+			}
+		}
+
 		mut pack_text := ''
 		mut unpack_text := ''
 
@@ -314,9 +337,9 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 			names := g.message_names(field.type_context, field.t)
 
 			// n := (field.type_context.join('') + names.lowercase_name).to_lower()
-			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, names.lowercase_name, field_type_type, name, field.number)
+			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, names.lowercase_name, field_type_type, name, field.number, is_packed)
 		} else {
-			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, field_type, field_type_type, name, field.number)
+			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, field_type, field_type_type, name, field.number, is_packed)
 		}
 
 		field_pack_text.l(pack_text)

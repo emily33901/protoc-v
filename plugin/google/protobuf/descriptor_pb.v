@@ -16,6 +16,7 @@ pub fn new_filedescriptorset() FileDescriptorSet {
 
 pub fn (o &FileDescriptorSet) pack() []byte {
 	mut res := []byte{}
+	// [packed=false]
 	for _, x in o.file {
 		res << pack_filedescriptorproto(x, 1)
 	}
@@ -34,6 +35,7 @@ pub fn filedescriptorset_unpack(buf []byte) ?FileDescriptorSet {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			1 {
+				// [packed=false]
 				ii, v := unpack_filedescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.file << v
 				i = ii
@@ -95,18 +97,23 @@ pub fn (o &FileDescriptorProto) pack() []byte {
 	if o.has_package {
 		res << vproto.pack_string_field(o.package, 2)
 	}
+	// [packed=false]
 	for _, x in o.dependency {
 		res << vproto.pack_string_field(x, 3)
 	}
+	// [packed=false]
 	for _, x in o.message_type {
 		res << pack_descriptorproto(x, 4)
 	}
+	// [packed=false]
 	for _, x in o.enum_type {
 		res << pack_enumdescriptorproto(x, 5)
 	}
+	// [packed=false]
 	for _, x in o.service {
 		res << pack_servicedescriptorproto(x, 6)
 	}
+	// [packed=false]
 	for _, x in o.extension {
 		res << pack_fielddescriptorproto(x, 7)
 	}
@@ -143,26 +150,31 @@ pub fn filedescriptorproto_unpack(buf []byte) ?FileDescriptorProto {
 				i = ii
 			}
 			3 {
+				// [packed=false]
 				ii, v := vproto.unpack_string_field(cur_buf, tag_wiretype.wire_type)
 				res.dependency << v
 				i = ii
 			}
 			4 {
+				// [packed=false]
 				ii, v := unpack_descriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.message_type << v
 				i = ii
 			}
 			5 {
+				// [packed=false]
 				ii, v := unpack_enumdescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.enum_type << v
 				i = ii
 			}
 			6 {
+				// [packed=false]
 				ii, v := unpack_servicedescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.service << v
 				i = ii
 			}
 			7 {
+				// [packed=false]
 				ii, v := unpack_fielddescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.extension << v
 				i = ii
@@ -303,18 +315,23 @@ pub fn (o &DescriptorProto) pack() []byte {
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
 	}
+	// [packed=false]
 	for _, x in o.field {
 		res << pack_fielddescriptorproto(x, 2)
 	}
+	// [packed=false]
 	for _, x in o.extension {
 		res << pack_fielddescriptorproto(x, 6)
 	}
+	// [packed=false]
 	for _, x in o.nested_type {
 		res << pack_descriptorproto(x, 3)
 	}
+	// [packed=false]
 	for _, x in o.enum_type {
 		res << pack_enumdescriptorproto(x, 4)
 	}
+	// [packed=false]
 	for _, x in o.extension_range {
 		res << pack_descriptorprotoextensionrange(x, 5)
 	}
@@ -342,26 +359,31 @@ pub fn descriptorproto_unpack(buf []byte) ?DescriptorProto {
 				i = ii
 			}
 			2 {
+				// [packed=false]
 				ii, v := unpack_fielddescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.field << v
 				i = ii
 			}
 			6 {
+				// [packed=false]
 				ii, v := unpack_fielddescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.extension << v
 				i = ii
 			}
 			3 {
+				// [packed=false]
 				ii, v := unpack_descriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.nested_type << v
 				i = ii
 			}
 			4 {
+				// [packed=false]
 				ii, v := unpack_enumdescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.enum_type << v
 				i = ii
 			}
 			5 {
+				// [packed=false]
 				ii, v := unpack_descriptorprotoextensionrange(cur_buf, tag_wiretype.wire_type)
 				res.extension_range << v
 				i = ii
@@ -603,6 +625,7 @@ pub fn (o &EnumDescriptorProto) pack() []byte {
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
 	}
+	// [packed=false]
 	for _, x in o.value {
 		res << pack_enumvaluedescriptorproto(x, 2)
 	}
@@ -630,6 +653,7 @@ pub fn enumdescriptorproto_unpack(buf []byte) ?EnumDescriptorProto {
 				i = ii
 			}
 			2 {
+				// [packed=false]
 				ii, v := unpack_enumvaluedescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.value << v
 				i = ii
@@ -771,6 +795,7 @@ pub fn (o &ServiceDescriptorProto) pack() []byte {
 	if o.has_name {
 		res << vproto.pack_string_field(o.name, 1)
 	}
+	// [packed=false]
 	for _, x in o.method {
 		res << pack_methoddescriptorproto(x, 2)
 	}
@@ -798,6 +823,7 @@ pub fn servicedescriptorproto_unpack(buf []byte) ?ServiceDescriptorProto {
 				i = ii
 			}
 			2 {
+				// [packed=false]
 				ii, v := unpack_methoddescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.method << v
 				i = ii
@@ -998,6 +1024,7 @@ pub fn (o &FileOptions) pack() []byte {
 	if o.has_py_generic_services {
 		res << vproto.pack_bool_field(o.py_generic_services, 18)
 	}
+	// [packed=false]
 	for _, x in o.uninterpreted_option {
 		res << pack_uninterpretedoption(x, 999)
 	}
@@ -1064,6 +1091,7 @@ pub fn fileoptions_unpack(buf []byte) ?FileOptions {
 				i = ii
 			}
 			999 {
+				// [packed=false]
 				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
@@ -1117,6 +1145,7 @@ pub fn (o &MessageOptions) pack() []byte {
 	if o.has_no_standard_descriptor_accessor {
 		res << vproto.pack_bool_field(o.no_standard_descriptor_accessor, 2)
 	}
+	// [packed=false]
 	for _, x in o.uninterpreted_option {
 		res << pack_uninterpretedoption(x, 999)
 	}
@@ -1147,6 +1176,7 @@ pub fn messageoptions_unpack(buf []byte) ?MessageOptions {
 				i = ii
 			}
 			999 {
+				// [packed=false]
 				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
@@ -1225,6 +1255,7 @@ pub fn (o &FieldOptions) pack() []byte {
 	if o.has_experimental_map_key {
 		res << vproto.pack_string_field(o.experimental_map_key, 9)
 	}
+	// [packed=false]
 	for _, x in o.uninterpreted_option {
 		res << pack_uninterpretedoption(x, 999)
 	}
@@ -1267,6 +1298,7 @@ pub fn fieldoptions_unpack(buf []byte) ?FieldOptions {
 				i = ii
 			}
 			999 {
+				// [packed=false]
 				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
@@ -1310,6 +1342,7 @@ pub fn new_enumoptions() EnumOptions {
 
 pub fn (o &EnumOptions) pack() []byte {
 	mut res := []byte{}
+	// [packed=false]
 	for _, x in o.uninterpreted_option {
 		res << pack_uninterpretedoption(x, 999)
 	}
@@ -1328,6 +1361,7 @@ pub fn enumoptions_unpack(buf []byte) ?EnumOptions {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			999 {
+				// [packed=false]
 				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
@@ -1371,6 +1405,7 @@ pub fn new_enumvalueoptions() EnumValueOptions {
 
 pub fn (o &EnumValueOptions) pack() []byte {
 	mut res := []byte{}
+	// [packed=false]
 	for _, x in o.uninterpreted_option {
 		res << pack_uninterpretedoption(x, 999)
 	}
@@ -1389,6 +1424,7 @@ pub fn enumvalueoptions_unpack(buf []byte) ?EnumValueOptions {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			999 {
+				// [packed=false]
 				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
@@ -1432,6 +1468,7 @@ pub fn new_serviceoptions() ServiceOptions {
 
 pub fn (o &ServiceOptions) pack() []byte {
 	mut res := []byte{}
+	// [packed=false]
 	for _, x in o.uninterpreted_option {
 		res << pack_uninterpretedoption(x, 999)
 	}
@@ -1450,6 +1487,7 @@ pub fn serviceoptions_unpack(buf []byte) ?ServiceOptions {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			999 {
+				// [packed=false]
 				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
@@ -1493,6 +1531,7 @@ pub fn new_methodoptions() MethodOptions {
 
 pub fn (o &MethodOptions) pack() []byte {
 	mut res := []byte{}
+	// [packed=false]
 	for _, x in o.uninterpreted_option {
 		res << pack_uninterpretedoption(x, 999)
 	}
@@ -1511,6 +1550,7 @@ pub fn methodoptions_unpack(buf []byte) ?MethodOptions {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			999 {
+				// [packed=false]
 				ii, v := unpack_uninterpretedoption(cur_buf, tag_wiretype.wire_type)
 				res.uninterpreted_option << v
 				i = ii
@@ -1632,6 +1672,7 @@ pub fn new_uninterpretedoption() UninterpretedOption {
 
 pub fn (o &UninterpretedOption) pack() []byte {
 	mut res := []byte{}
+	// [packed=false]
 	for _, x in o.name {
 		res << pack_uninterpretedoptionnamepart(x, 2)
 	}
@@ -1668,6 +1709,7 @@ pub fn uninterpretedoption_unpack(buf []byte) ?UninterpretedOption {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			2 {
+				// [packed=false]
 				ii, v := unpack_uninterpretedoptionnamepart(cur_buf, tag_wiretype.wire_type)
 				res.name << v
 				i = ii
@@ -1748,12 +1790,10 @@ pub fn new_sourcecodeinfolocation() SourceCodeInfoLocation {
 
 pub fn (o &SourceCodeInfoLocation) pack() []byte {
 	mut res := []byte{}
-	for _, x in o.path {
-		res << vproto.pack_int32_field(x, 1)
-	}
-	for _, x in o.span {
-		res << vproto.pack_int32_field(x, 2)
-	}
+	// [packed=true]
+	res << vproto.pack_int32_field_packed(o.path, 1)
+	// [packed=true]
+	res << vproto.pack_int32_field_packed(o.span, 2)
 	return res
 }
 
@@ -1769,12 +1809,14 @@ pub fn sourcecodeinfolocation_unpack(buf []byte) ?SourceCodeInfoLocation {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			1 {
-				ii, v := vproto.unpack_int32_field(cur_buf, tag_wiretype.wire_type)
+				// [packed=true]
+				ii, v := vproto.unpack_int32_field_packed(cur_buf, tag_wiretype.wire_type)
 				res.path << v
 				i = ii
 			}
 			2 {
-				ii, v := vproto.unpack_int32_field(cur_buf, tag_wiretype.wire_type)
+				// [packed=true]
+				ii, v := vproto.unpack_int32_field_packed(cur_buf, tag_wiretype.wire_type)
 				res.span << v
 				i = ii
 			}
@@ -1817,6 +1859,7 @@ pub fn new_sourcecodeinfo() SourceCodeInfo {
 
 pub fn (o &SourceCodeInfo) pack() []byte {
 	mut res := []byte{}
+	// [packed=false]
 	for _, x in o.location {
 		res << pack_sourcecodeinfolocation(x, 1)
 	}
@@ -1835,6 +1878,7 @@ pub fn sourcecodeinfo_unpack(buf []byte) ?SourceCodeInfo {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			1 {
+				// [packed=false]
 				ii, v := unpack_sourcecodeinfolocation(cur_buf, tag_wiretype.wire_type)
 				res.location << v
 				i = ii

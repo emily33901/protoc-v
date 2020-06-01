@@ -118,12 +118,14 @@ pub fn new_codegeneratorrequest() CodeGeneratorRequest {
 
 pub fn (o &CodeGeneratorRequest) pack() []byte {
 	mut res := []byte{}
+	// [packed=false]
 	for _, x in o.file_to_generate {
 		res << vproto.pack_string_field(x, 1)
 	}
 	if o.has_parameter {
 		res << vproto.pack_string_field(o.parameter, 2)
 	}
+	// [packed=false]
 	for _, x in o.proto_file {
 		res << protobuf.pack_filedescriptorproto(x, 15)
 	}
@@ -145,6 +147,7 @@ pub fn codegeneratorrequest_unpack(buf []byte) ?CodeGeneratorRequest {
 		cur_buf := buf_before_wire_type[tag_wiretype.consumed..]
 		match tag_wiretype.tag {
 			1 {
+				// [packed=false]
 				ii, v := vproto.unpack_string_field(cur_buf, tag_wiretype.wire_type)
 				res.file_to_generate << v
 				i = ii
@@ -156,6 +159,7 @@ pub fn codegeneratorrequest_unpack(buf []byte) ?CodeGeneratorRequest {
 				i = ii
 			}
 			15 {
+				// [packed=false]
 				ii, v := protobuf.unpack_filedescriptorproto(cur_buf, tag_wiretype.wire_type)
 				res.proto_file << v
 				i = ii
@@ -295,6 +299,7 @@ pub fn (o &CodeGeneratorResponse) pack() []byte {
 	if o.has_error_ {
 		res << vproto.pack_string_field(o.error_, 1)
 	}
+	// [packed=false]
 	for _, x in o.file {
 		res << pack_codegeneratorresponsefile(x, 15)
 	}
@@ -319,6 +324,7 @@ pub fn codegeneratorresponse_unpack(buf []byte) ?CodeGeneratorResponse {
 				i = ii
 			}
 			15 {
+				// [packed=false]
 				ii, v := unpack_codegeneratorresponsefile(cur_buf, tag_wiretype.wire_type)
 				res.file << v
 				i = ii

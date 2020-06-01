@@ -6,18 +6,15 @@ import google.protobuf
 import google.protobuf.compiler
 
 fn main() {
-	mut proto := ''
+	as_bytes := os.get_raw_stdin()
 
-	for {
-		l := proto.len
-		proto += os.get_raw_line()
-	
-		if l == proto.len { break }
+	// Wait for debugger so i can maintain my sanity
+	for !os.debugger_present() {
 	}
-
-	as_bytes := []byte{}(proto)
 
 	request := compiler.codegeneratorrequest_unpack(as_bytes) or {
 		panic('Failed to decode protobufs')
 	}
+
+	os.write_file('test-output/result.txt', '$request')
 }
