@@ -48,7 +48,7 @@ fn map_fields() ? {
 }
 
 
-fn vproto_test() ? {
+fn test_vproto() ? {
 	basic()?
 	map_fields()?
 

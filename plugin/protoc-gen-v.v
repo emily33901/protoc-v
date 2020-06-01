@@ -5,6 +5,8 @@ import os
 import google.protobuf
 import google.protobuf.compiler
 
+import json
+
 fn main() {
 	as_bytes := os.get_raw_stdin()
 
@@ -16,5 +18,7 @@ fn main() {
 		panic('Failed to decode protobufs')
 	}
 
-	os.write_file('test-output/result.txt', '$request')
+	s := json.encode(request)
+
+	os.write_file('test-output/result.txt', s)
 }
