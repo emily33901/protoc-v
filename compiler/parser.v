@@ -2,6 +2,23 @@ module compiler
 
 import os
 
+// Saved state is used when importing files and
+// allows the parser to keep track of where it was
+// before importing occured
+// type_table and type_context are not needed becuase
+// importing is a top level statement and therefore
+// there couldnt be any current type_context
+pub struct SavedState {
+mut: 
+	text string [skip] // file text
+	char int [skip] // current char index
+
+	line int [skip]
+	line_char int [skip] // The char that the new line was on
+
+	current_file int
+}
+
 pub struct Parser {
 mut:
 	file_inputs []string
@@ -14,10 +31,10 @@ mut:
 	line int [skip]
 	line_char int [skip] // The char that the new line was on
 
-
 	type_table &TypeTable
-
 	type_context []string
+
+	current_file int
 
 	// TODO dont make public
 pub mut:
@@ -30,7 +47,7 @@ const (
 )
 
 fn (p &Parser) current_file() &File {
-	return p.files[p.files.len-1]
+	return p.files[p.current_file]
 }
 
 fn (p &Parser) report_error(text string) {
@@ -1326,112 +1343,144 @@ fn (mut p Parser) consume_empty_statement() bool {
 	return false
 }
 
-fn (mut p Parser) resolved_import(im &Import, path string) {
+fn (mut p Parser) parse_import(im &Import) {
+	// Try and find this imports real path
+	current_file_path := os.real_path(p.current_file().path).all_before_last(os.path_separator)
+	mut new_path := os.real_path(os.join_path(current_file_path, im.package))
+
+	if !p.quiet { println('importing $im.package ...') }
+
+	mut found := false
+
+	if !os.exists(new_path) {
+		found = false
+
+		// Check in the import paths
+		for _, im_path in p.imports {
+			path := os.real_path(os.join_path(os.real_path(im_path), im.package))
+
+			if !p.quiet { println('> Trying $path') }
+			
+			if os.exists(path) {
+				new_path = path
+				found = true
+				break
+			}
+		}
+
+	} else {
+		found = true
+	}
+
+	if !found {
+		p.report_error('Unable to find $new_path')
+	}
+
+	im.package = new_path
+
 	// Turn this imports path into an absolute path
 	// now that we have resolved it
+	im.package = new_path
 
-	im.package = path
+	p.parse_file(new_path)
 }
 
-pub fn (mut p Parser) parse() {
-	p.type_table = &TypeTable{}
+fn (p &Parser) state() SavedState {
+	s := SavedState {
+		text: p.text
+		char: p.char
+		
+		line: p.line
+		line_char: p.line_char
+		current_file: p.current_file
+	}
 
-	for i := 0; ; i++ {
-		if i >= p.file_inputs.len { break }
+	return s
+}
 
-		filename := p.file_inputs[i]
+fn (mut p Parser) reset_state(s SavedState) {
+	p.text = s.text
+	p.char = s.char
 
-		println('Parsing $filename')
+	p.line = s.line
+	p.line_char = s.line_char
+	p.current_file = s.current_file
+}
 
-		text := os.read_file(filename) or {
-			panic(err)
+fn (mut p Parser) parse_statements(new_file int, text string) {
+	// proto = syntax { import | package | option | topLevelDef | emptyStatement }
+	saved_state := p.state()
+
+	// reset the parser
+	p.text = text
+	p.line = 0
+	p.line_char = 0
+	p.char = 0
+	p.current_file = new_file
+
+	p.consume_syntax()
+
+	if p.current_file().syntax == .proto3 {
+		p.report_error('Unable to parse proto3 files right now...')
+	}
+
+	for !p.end_of_file() {
+		mut consumed_something := false
+
+		p.consume_whitespace()
+
+		if p.consume_import() {
+			f := p.current_file()
+			p.parse_import(f.imports[f.imports.len-1])
+
+			consumed_something = true 
+		}
+		if p.consume_package() { consumed_something = true }
+		
+		if o := p.consume_option() {
+			consumed_something = true
+			f := p.current_file() f.options << o
 		}
 
-		// reset the parser
-		p.text = text
-		p.line = 0
-		p.line_char = 0
-		p.char = 0
-		p.files << &File{filename: filename, path: filename}
-		p.type_context = []
+		if p.consume_top_level_def() { consumed_something = true }
+		if p.consume_empty_statement() { consumed_something = true }
 
-		// proto = syntax { import | package | option | topLevelDef | emptyStatement }
-
-		p.consume_syntax()
-
-		if p.current_file().syntax == .proto3 {
-			p.report_error('Unable to parse proto3 files right now...')
-		}
-
-		for {
-			mut consumed_something := false
-
-			p.consume_whitespace()
-
-			if p.consume_import() { consumed_something = true }
-			if p.consume_package() { consumed_something = true }
-			
-			if o := p.consume_option() {
-				consumed_something = true
-				f := p.current_file() f.options << o
-			}
-
-			if p.consume_top_level_def() { consumed_something = true }
-			if p.consume_empty_statement() { consumed_something = true }
-
-			if !consumed_something {
-				ident := p.next_full_ident()
-				p.report_error('Bad syntax: `$ident` not expected here')
-			}
-
-			if p.end_of_file() { break }
-		}
-
-		// parsed this file
-		// see if we have any imports that need resolving
-
-		for _, im in p.current_file().imports {
-			// TODO if the proto isnt in this folder than we need to check
-			// other include folders for it
-			current_file_path := os.real_path(p.current_file().path).all_before_last(os.path_separator)
-			mut new_path := os.real_path(os.join_path(current_file_path, im.package))
-
-			if !p.quiet { println('importing $im.package ...') }
-
-			mut found := false
-
-			if !os.exists(new_path) {
-				found = false
-
-				// Check in the import paths
-				for _, im_path in p.imports {
-					path := os.real_path(os.join_path(os.real_path(im_path), im.package))
-
-					if !p.quiet { println('> Trying $path') }
-					
-					if os.exists(path) {
-						new_path = path
-						found = true
-						break
-					}
-				}
-
-			} else {
-				found = true
-			}
-
-			if !found {
-				p.report_error('Unable to find $new_path')
-			}
-
-			if new_path in p.file_inputs {
-			} else {
-				p.file_inputs << new_path
-			}
-
-			p.resolved_import(im, new_path)
+		if !consumed_something {
+			ident := p.next_full_ident()
+			p.report_error('Bad syntax: `$ident` not expected here')
 		}
 	}
+
+	p.reset_state(saved_state)
+}
+
+pub fn (mut p Parser) parse_file(filename string) &File {
+	if filename in p.file_inputs {
+		p.report_error('cyclic dependency in $filename')
+	}
+
+	text := os.read_file(filename) or {
+		p.report_error('Unable to read $filename: $err')
+		panic('')
+	}
+
+	p.file_inputs << filename
+
+	p.files << &File{filename: filename, path: filename}
+
+	p.parse_statements(p.files.len-1, text)
+
+	return p.current_file()
+}
+
+pub fn new_parser(quiet bool, imports []string, ) &Parser {
+	p := &Parser {
+		imports: imports
+		quiet: quiet
+		type_table: &compiler.TypeTable{}
+	}
+
+	return p
 }
 
 fn (mut p Parser) enter_new_type_scope(name string) {
@@ -1449,6 +1498,11 @@ fn (p &Parser) type_scope() []string {
 	ctx << p.type_context
 	return ctx
 }
+
+fn (p &Parser) file_context(f &File) []string {
+	package := f.package.split('.')
+	return package
+} 
 
 // TODO refactor validation from the parser to another struct
 
@@ -1546,7 +1600,9 @@ fn (p &Parser) check_message_field_types(type_context []string, message &Message
 			continue
 		}
 
-		p.report_invalid('Unable to find type `$field.t` for `$field.name` in `$message.name`')
+		
+
+		p.report_invalid('Unable to find type `$field.t` for `$field.name` in `$message.name` ($message_type_context)')
 	}
 
 }
@@ -1554,7 +1610,7 @@ fn (p &Parser) check_message_field_types(type_context []string, message &Message
 fn (p &Parser) check_field_numbers() {
 	for _, file in p.files {
 		for _, message in file.messages {
-			p.check_message_field_numbers([file.package], message)
+			p.check_message_field_numbers(p.file_context(file), message)
 		}
 	}
 }
@@ -1562,7 +1618,7 @@ fn (p &Parser) check_field_numbers() {
 fn (p &Parser) check_field_types() {
 	for _, file in p.files {
 		for _, message in file.messages {
-			p.check_message_field_types([file.package], message)
+			p.check_message_field_types(p.file_context(file), message)
 		}
 	}
 }
@@ -1592,11 +1648,11 @@ fn (p &Parser) check_enum_field_names(type_context []string, e &Enum) {
 fn (p &Parser) check_field_names() {
 	for _, file in p.files {
 		for _, message in file.messages {
-			p.check_message_field_names([file.package], message)
+			p.check_message_field_names(p.file_context(file), message)
 		}
 
 		for _, e in file.enums {
-			p.check_enum_field_names([file.package], e)
+			p.check_enum_field_names(p.file_context(file), e)
 		}
 	}
 }
@@ -1636,7 +1692,7 @@ fn (p &Parser) check_extends(type_context []string, extend &Extend) {
 fn (p &Parser) check_file_extends() {
 	for _, file in p.files {
 		for _, extend in file.extends {
-			p.check_extends([file.package], extend)
+			p.check_extends(p.file_context(file), extend)
 		}
 	}
 }

@@ -72,16 +72,12 @@ fn main() {
 		os.mkdir(args.out_folder)
 	}
 
-	mut p := compiler.Parser{file_inputs: [args.filename], imports: args.imports, quiet: args.quiet, type_table: &compiler.TypeTable{}}
+	mut p := compiler.new_parser(args.quiet, args.imports)
 
-	p.parse()
-
+	f := p.parse_file(args.filename)
 	p.validate()
 
-	mut g := compiler.new_gen(&p)
-
-	// We only care about saving the file that we were asked to
-	f := p.files[0]
+	mut g := compiler.new_gen(p)
 
 	filename := os.real_path(f.filename).all_after_last(os.path_separator).all_before_last('.') + '_pb.v'
 
