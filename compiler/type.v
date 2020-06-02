@@ -17,19 +17,22 @@ pub struct Type {
 
 pub fn new_type(context []string, name string, is_enum, is_message bool, file &File) &Type {
 	mut full_name_pieces := []string{}
+	mut context_no_pkg := []string{}
 	// TODO cleanup when vlang #5041 is fixed
 
-	// no package?
-	if context[0].len == 0 {
-		if context.len > 1 {
-			fnp := context[1..]
-			full_name_pieces = fnp.clone()
-		}
-	} else {
-		full_name_pieces = context.clone()
-	}
+	if context.len != 0 {
 
-	context_no_pkg := context.join('.').replace(file.package, '').split('.')
+		// no package?
+		if context[0].len == 0 {
+			if context.len > 1 {
+				fnp := context[1..]
+				full_name_pieces = fnp.clone()
+			}
+		} else {
+			full_name_pieces = context.clone()
+		}
+		context_no_pkg = context.join('.').replace(file.package, '').split('.')
+	}
 
 	full_name_pieces << name
 
@@ -91,8 +94,17 @@ pub struct FoundType {
 	context []string
 }
 
-pub fn (t &TypeTable) lookup_type(context []string, name string) ?FoundType {
+pub fn (t &TypeTable) lookup_type(ctx []string, name string) ?FoundType {
 	// There are a few things we can try here
+
+	mut context := []string{}
+
+	// remove anything blank from the start of context
+	for x in ctx {
+		if x != '' {
+			context << x 
+		}
+	}
 
 	// '$name' '.$name'
 	// '.${context.last...}.$name'

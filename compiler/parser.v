@@ -499,7 +499,6 @@ fn (mut p Parser) consume_syntax() {
 
 	// syntax = "syntax" "=" quote "proto2" quote ";"
 
-	// if there is no 'syntax' then this cant be parsed right now
 	if p.next_full_ident() != 'syntax' { 
 		f := p.current_file() f.syntax = .proto2
 		return 
@@ -864,16 +863,24 @@ fn (mut p Parser) consume_field(is_oneof_field bool) ?&Field {
 
 	mut label := p.next_full_ident()
 
-	if label != 'required' && label != 'optional' && label != 'repeated' && !is_oneof_field {
-		// Not a "normal field"
-		return none
+	has_label := if label == 'required' || label == 'optional' || label == 'repeated' && !is_oneof_field {
+		p.consume_known_ident()
+		true
+	} else {
+		false
 	}
 
 	// oneof fields do not have labels
-	if !is_oneof_field {
-		p.consume_known_ident()
-	} else {
-		label = ''
+	if !has_label {
+		if p.current_file().syntax == .proto3 && !is_oneof_field {
+			label = 'optional'
+		} else {
+			label = ''
+		}
+	}
+
+	if p.current_file().syntax == .proto2 && !is_oneof_field && !has_label {
+		p.report_error('Proto2 requires message fields to have a label...')
 	}
 
 	p.consume_whitespace()
@@ -1182,57 +1189,51 @@ fn (mut p Parser) consume_message_body(name string, typ &Type) &Message {
 	mut reserveds := []&Reserved{}
 
 	for {
-		mut consumed_something := false
-
-		if f := p.consume_field(false) {
-			consumed_something = true
-			fields << f
-		}
-		if e := p.consume_enum() {
-			consumed_something = true
-			enums << e
-		}
-		if m := p.consume_message() {
-			consumed_something = true
-			messages << m
-		}
-		if ex := p.consume_extend() {
-			consumed_something = true
-			extends << ex
-		}
-		if ext := p.consume_extension() {
-			consumed_something = true
-			extensions << ext
-		}
-		if o := p.consume_option() {
-			consumed_something = true
-			options << o
-		}
-		if one := p.consume_oneof() {
-			consumed_something = true
-			oneofs << one
-		}
-		if mf := p.consume_map_field() {
-			consumed_something = true
-			map_fields << mf
-		}
-		if r := p.consume_reserved() {
-			consumed_something = true
-			reserveds << r
-		}
-
 		if p.consume_empty_statement() {
-			consumed_something = true
+			continue
 		}
-
 		if p.next_char() == `}` {
 			break
 		}
-
-		if !consumed_something {
-			ident := p.next_full_ident()
-			p.report_error('Bad syntax: `$ident` not expected here')
+		if o := p.consume_option() {
+			options << o
+			continue
 		}
+		if e := p.consume_enum() {
+			enums << e
+			continue
+		}
+		if m := p.consume_message() {
+			messages << m
+			continue
+		}
+		if ex := p.consume_extend() {
+			extends << ex
+			continue
+		}
+		if ext := p.consume_extension() {
+			extensions << ext
+			continue
+		}
+		if one := p.consume_oneof() {
+			oneofs << one
+			continue
+		}
+		if mf := p.consume_map_field() {
+			map_fields << mf
+			continue
+		}
+		if r := p.consume_reserved() {
+			reserveds << r
+			continue
+		}
+		if f := p.consume_field(false) {
+			fields << f
+			continue
+		}
+
+		ident := p.next_full_ident()
+		p.report_error('Bad syntax: `$ident` not expected here')
 	}
 
 	return &Message{name, fields, enums, messages, extends, extensions, options, oneofs, map_fields, reserveds, typ}
@@ -1384,7 +1385,7 @@ fn (mut p Parser) parse_import(im &Import) {
 	// now that we have resolved it
 	im.package = new_path
 
-	p.parse_file(new_path)
+	p.parse_file(new_path, '')
 }
 
 fn (p &Parser) state() SavedState {
@@ -1422,10 +1423,6 @@ fn (mut p Parser) parse_statements(new_file int, text string) {
 
 	p.consume_syntax()
 
-	if p.current_file().syntax == .proto3 {
-		p.report_error('Unable to parse proto3 files right now...')
-	}
-
 	for !p.end_of_file() {
 		mut consumed_something := false
 
@@ -1456,7 +1453,7 @@ fn (mut p Parser) parse_statements(new_file int, text string) {
 	p.reset_state(saved_state)
 }
 
-pub fn (mut p Parser) parse_file(filename string) &File {
+pub fn (mut p Parser) parse_file(filename, module_override string) &File {
 	if filename in p.file_inputs {
 		p.report_error('cyclic dependency in $filename')
 	}
@@ -1468,7 +1465,7 @@ pub fn (mut p Parser) parse_file(filename string) &File {
 
 	p.file_inputs << filename
 
-	p.files << &File{filename: filename, path: filename}
+	p.files << &File{filename: filename, path: filename, package_override: module_override}
 
 	p.parse_statements(p.files.len-1, text)
 

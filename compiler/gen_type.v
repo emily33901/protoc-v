@@ -46,7 +46,7 @@ fn to_v_message_name(pkg_prefix string, context []string, name string) string {
 }
 
 enum TypeType {
-	message enum_ other
+	message enum_ scalar other
 }
 
 fn escape_name(name string) string {
@@ -64,7 +64,12 @@ fn escape_name(name string) string {
 // actually does.
 fn type_to_typename(current_package string, type_table &TypeTable, context []string, t string) (string, TypeType) {
 	if t in valid_types {
-		return valid_types_v[valid_types.index(t)], TypeType.other
+		idx := valid_types.index(t)
+		return valid_types_v[idx], if idx <= type_max_scalar_index {
+			TypeType.scalar
+		} else { 
+			TypeType.other 
+		}
 	}
 
 	if found := type_table.lookup_type(context, t) {

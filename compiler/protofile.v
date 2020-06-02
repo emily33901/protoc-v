@@ -12,6 +12,7 @@ mut:
 	syntax ProtoSyntax // syntax of the file
 
 	package string
+	package_override string
 	imports []&Import
 	options []&OptionField
 	enums []&Enum
@@ -23,4 +24,8 @@ mut:
 pub:
 	filename string 
 	path string
+}
+
+pub fn (f File) has_package() bool {
+	return f.package != '' || f.package_override != ''
 }

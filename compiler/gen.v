@@ -13,28 +13,24 @@ module compiler
 
 struct Gen {
 	type_table &TypeTable
-	w Writer
 
 mut: 
+	w Writer
+	syntax ProtoSyntax
+
 	// Maps proto packages to v packages
 	package_lookup map[string]string
 
 	current_package string
+
 }
 
 fn (mut g Gen) gen_file_header(f &File) {
-	// TODO figure out an appropriate module
-	// if the file doesnt have an explicit package set
 
-	mut mod := ''
-	for _, o in f.options {
-		if o.ident == 'v_package' {
-			mod = o.value.value
-		}
-	}
-
-	if mod == '' {
-		mod = f.package.all_after_last('.')
+	mod := if f.package_override != '' {
+		f.package_override
+	} else {
+		f.package
 	}
 
 	g.w.l('
@@ -103,7 +99,7 @@ fn (g Gen) message_names(context []string, t string) MessageNames {
 fn (g &Gen) type_pack_name(pack_or_unpack string, field_proto_type string, field_v_type string, field_type_type TypeType) string {
 	// TODO clean up this whackness :(
 	match field_type_type {
-		.other {
+		.other, .scalar {
 			match field_proto_type {
 				'fixed32' {
 					return 'vproto.${pack_or_unpack}_32bit_field'
@@ -413,7 +409,9 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 			g.w.l('${name} []${field_type}')
 		}
 
-		mut is_packed := false
+		// in proto3 these are packed by default
+		mut is_packed := g.syntax == .proto3 && field_type_type == .scalar
+
 		if field.label == 'repeated' {
 			for o in field.options {
 				if o.ident == 'packed' {
@@ -439,10 +437,16 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 	}
 
 	for map_field in m.map_fields {
-		key_type, _ := g.type_to_typename(map_field.type_context, map_field.key_type)
+		mut key_type, _ := g.type_to_typename(map_field.type_context, map_field.key_type)
 		value_type, value_type_type := g.type_to_typename(map_field.type_context, map_field.value_type)
 
 		name := escape_name(map_field.name)
+
+		// TODO revert when there is support for non-key types in maps!
+		if key_type != 'string' {
+			println('Warning: V doesnt support map keys that arent strings right now.\nThis will generate bad code!')
+			key_type = 'string'
+		}
 
 		g.w.l('${name} map[$key_type]$value_type')
 
@@ -511,6 +515,7 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 
 pub fn (mut g Gen) gen_file_text(f &File) string {
 	g.current_package = f.package
+	g.syntax = f.syntax
 	g.gen_file_header(f)
 
 	for _, e in f.enums {

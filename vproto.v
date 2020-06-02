@@ -18,6 +18,7 @@ mut:
 	out_folder string
 	imports []string
 	quiet bool
+	module_override string
 	fp &flag.FlagParser
 }
 
@@ -34,6 +35,7 @@ fn parse_args() Args {
 
 	args.filename = fp.string('filename', `f`, '', 'Filename of proto to parse')
 	args.out_folder = fp.string('out_dir', `o`, '', 'Output folder of V file')
+	args.module_override = fp.string('mod', `m`, '', 'V Module override')
 
 	im := fp.string_multi('import', `i`, 'Add a directory to imports')
 
@@ -74,8 +76,13 @@ fn main() {
 
 	mut p := compiler.new_parser(args.quiet, args.imports)
 
-	f := p.parse_file(args.filename)
+	mut f := p.parse_file(args.filename, args.module_override)
 	p.validate()
+
+	if !f.has_package() {
+		println('$f.filename does not have a package. You need to pass a -m `new_pkg` to set it manually.')
+		exit(1)
+	}
 
 	mut g := compiler.new_gen(p)
 

@@ -67,7 +67,8 @@ const (
 		'sint32', 'sint64',
 		'fixed32', 'fixed64',
 		'sfixed32', 'sfixed64',
-		'bool', 'string', 'bytes']
+		'bool', 
+		'string', 'bytes']
 	valid_types_v = [
 		'f64', 'f32',
 		'int', 'i64',
@@ -75,8 +76,10 @@ const (
 		'int', 'i64',
 		'u32', 'u64',
 		'int', 'i64',
-		'bool', 'string', '[]byte']
+		'bool', 
+		'string', '[]byte']
 	keywords_v    = ['type', 'error']
+	type_max_scalar_index = 12
 )
 
 pub struct Field {

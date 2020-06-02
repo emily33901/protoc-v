@@ -5,3 +5,5 @@ vproto_test/*_pb.v
 *.pdb
 *.ilk
 .vs/
+*.lib
+*.exp
