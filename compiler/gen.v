@@ -43,8 +43,6 @@ import emily33901.vproto
 
 ')
 
-	println('${g.package_lookup}')
-
 	for _, i in f.imports {
 		x := i.package
 		pkg := g.package_lookup[x]
