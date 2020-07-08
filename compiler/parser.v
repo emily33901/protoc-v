@@ -1294,13 +1294,23 @@ fn (mut p Parser) consume_service() ?&Service {
 	p.consume_whitespace()
 
 	// TODO actually consume the body properly
+	mut level := 1
 
 	for {
 		if p.end_of_file() { p.report_error('Reached end of file while parsing service definition') }
-		if p.next_char() == `}` { break }
+		if p.next_char() == `{` {
+			level++
+		}
+		if p.next_char() == `}` { level-- }
+
+		if level == 0 {
+			break
+		}
 
 		p.consume_char()
 	}
+
+	if p.consume_char() != `}` { p.report_error('Expected `}` at end of service block') }
 
 	p.consume_char()
 
