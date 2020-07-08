@@ -43,9 +43,15 @@ import emily33901.vproto
 
 ')
 
+	println('${g.package_lookup}')
+
 	for _, i in f.imports {
 		x := i.package
-		g.text.writeln('import ${g.package_lookup[x]}')
+		pkg := g.package_lookup[x]
+		if pkg == '' {
+			continue
+		}
+		g.text.writeln('import $pkg')
 	}
 
 // g.text.writeln('

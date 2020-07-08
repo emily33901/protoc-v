@@ -1455,7 +1455,14 @@ fn (mut p Parser) parse_statements(new_file int, text string) {
 
 pub fn (mut p Parser) parse_file(filename, module_override string) &File {
 	if filename in p.file_inputs {
-		p.report_error('cyclic dependency in $filename')
+		println('skipping $filename becuase it has already been parsed')
+		for f in p.files {
+			if f.filename == filename {
+				return f
+			}
+		}
+
+		panic('unable to find previously parsed file...')
 	}
 
 	text := os.read_file(filename) or {
