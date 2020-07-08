@@ -863,7 +863,7 @@ fn (mut p Parser) consume_field(is_oneof_field bool) ?&Field {
 
 	mut label := p.next_full_ident()
 
-	has_label := if label == 'required' || label == 'optional' || label == 'repeated' && !is_oneof_field {
+	has_label := if (label == 'required' || label == 'optional' || label == 'repeated') && !is_oneof_field {
 		p.consume_known_ident()
 		true
 	} else {

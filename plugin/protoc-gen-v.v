@@ -14,6 +14,8 @@ fn main() {
 	// for !os.debugger_present() {
 	// }
 
+	os.break_if_debugger_attached()
+
 	request := compiler.codegeneratorrequest_unpack(as_bytes) or {
 		panic('Failed to decode protobufs')
 	}
