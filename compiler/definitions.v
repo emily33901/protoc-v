@@ -78,7 +78,7 @@ const (
 		'int', 'i64',
 		'bool', 
 		'string', '[]byte']
-	keywords_v    = ['type', 'error']
+	keywords_v    = ['type', 'none']
 	type_max_scalar_index = 12
 )
 

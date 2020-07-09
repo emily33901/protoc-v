@@ -51,7 +51,7 @@ enum TypeType {
 
 fn escape_name(name string) string {
 	if name in keywords_v {
-		return name + '_'
+		return '@' + name
 	}
 
 	mut new_name := name.replace_each(['__', '_'])
