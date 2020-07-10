@@ -1,9 +1,0 @@
-fns.txt
-*.exe
-test-output/
-vproto_test/*_pb.v
-*.pdb
-*.ilk
-.vs/
-*.lib
-*.exp
