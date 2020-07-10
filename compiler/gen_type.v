@@ -50,12 +50,16 @@ enum TypeType {
 }
 
 fn escape_name(name string) string {
+	mut new_name := name.replace_each(['__', '_'])
+	return new_name.to_lower()
+}
+
+fn escape_keyword(name string) string {
 	if name in keywords_v {
 		return '@' + name
 	}
 
-	mut new_name := name.replace_each(['__', '_'])
-	return new_name.to_lower()
+	return name
 }
 
 // TODO this is still misleading

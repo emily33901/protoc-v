@@ -40,7 +40,6 @@ fn (mut g Gen) gen_file_header(f &File) {
 module ${mod}
 
 import emily33901.vproto
-
 ')
 
 	for _, i in f.imports {
@@ -49,8 +48,10 @@ import emily33901.vproto
 		if pkg == '' {
 			continue
 		}
-		g.text.writeln('import $pkg')
+		g.text.writeln('import ${mod}.$pkg')
 	}
+
+	g.text.writeln('')
 
 // g.text.writeln('
 // pub const (
@@ -65,10 +66,11 @@ fn (mut g Gen) gen_enum_definition(type_context []string, e &Enum) {
 	e_name := names.struct_name
 	e_full_name := names.lowercase_name
 
+	g.text.writeln('[_allow_multiple_values]')
 	g.text.writeln('enum ${e_name} {')
 
 	for _, field in e.fields {
-		escaped_name := escape_name(to_v_field_name(field.name))
+		escaped_name := escape_keyword(escape_name(to_v_field_name(field.name)))
 		g.text.writeln('$escaped_name = $field.value.value')
 	}
 
@@ -407,11 +409,12 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 		// println('$type_context - $field.type_context = $simple_context')
 		field_type, field_type_type := g.type_to_typename(field.type_context, field.t)
 
-		name := escape_name(field.name)
+		raw_name := escape_name(field.name)
+		name := escape_keyword(raw_name)
 
 		if field.label == 'optional' {
 			g.text.writeln('${name} ${field_type}')
-			g.text.writeln('has_${field.name} bool')
+			g.text.writeln('has_${raw_name} bool')
 
 		} else if field.label == 'required' {
 			g.text.writeln('${name} ${field_type}')
@@ -437,9 +440,9 @@ fn (mut g Gen) gen_message_internal(type_context []string, m &Message) {
 			names := g.message_names(field.type_context, field.t)
 
 			// n := (field.type_context.join('') + names.lowercase_name).to_lower()
-			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, names.lowercase_name, field_type_type, name, field.name, field.number, is_packed)
+			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, names.lowercase_name, field_type_type, name, raw_name, field.number, is_packed)
 		} else {
-			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, field_type, field_type_type, name, field.name, field.number, is_packed)
+			pack_text, unpack_text = g.gen_field_pack_text(field.label, field.t, field_type, field_type_type, name, raw_name, field.number, is_packed)
 		}
 
 		field_pack_text.writeln(pack_text)
